@@ -18,6 +18,21 @@ Paddle enemy{ palette::Color::RED, MAX_X - 2 };
 Ball ball{};
 
 static void updateCoords() {
+    static unsigned playerScore{ 0 };
+    static unsigned enemyScore{ 0 };
+
+    const std::optional<Player> playerZone{ ball.inPlayerZone() };
+
+    if (playerZone.has_value()) {
+        ball.reset();
+        if (playerZone.value() == Player::Player) {
+            enemyScore++; // ball is in player territory --> enemy scored 1 point
+        } else {
+            playerScore++;
+        }
+        iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
+    }
+
     scanKeys();
     const u32 keys = keysHeld() | keysDown();
 
@@ -34,21 +49,6 @@ static void updateCoords() {
         ball.rotate(enemyIntersect.value());
     }
     ball.forward();
-
-    static unsigned playerScore{ 0 };
-    static unsigned enemyScore{ 0 };
-
-    const std::optional<Player> playerZone{ ball.inPlayerZone() };
-
-    if (playerZone.has_value()) {
-        ball.reset();
-        if (playerZone.value() == Player::Player) {
-            enemyScore++; // ball is in player territory --> enemy scored 1 point
-        } else {
-            playerScore++;
-        }
-        iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
-    }
 
     const unsigned ballY{ ball.pos().second };
     const unsigned enemyY{ enemy.pos().second };
