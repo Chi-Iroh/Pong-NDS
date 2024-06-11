@@ -6,12 +6,19 @@
 #include "ScreenSize.hpp"
 
 class Paddle {
+public:
+    enum class Type {
+        PLAYER,
+        ENEMY
+    };
+
+private:
     unsigned x;
     unsigned y[3];
     const unsigned paletteIndex;
 
 public:
-    Paddle(unsigned paletteIndex, unsigned x, unsigned y = MAX_Y / 2);
+    Paddle(Type type);
 
     void setPosition(unsigned x, unsigned y);
     void move(int x, int y);

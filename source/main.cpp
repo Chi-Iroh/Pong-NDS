@@ -13,8 +13,8 @@ static void clear() {
     }
 }
 
-Paddle player{ palette::Color::BLUE, 1 };
-Paddle enemy{ palette::Color::RED, MAX_X - 2 };
+Paddle player{ Paddle::Type::PLAYER };
+Paddle enemy{ Paddle::Type::ENEMY };
 Ball ball{};
 
 static void updateCoords() {

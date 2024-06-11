@@ -2,12 +2,17 @@
 #include <cmath>
 #include "Coords.hpp"
 #include "Paddle.hpp"
+#include "Palette.hpp"
 #include "ScreenSize.hpp"
 
-Paddle::Paddle(unsigned paletteIndex, unsigned x, unsigned y) :
-    paletteIndex{ paletteIndex }
+Paddle::Paddle(Type type) :
+    paletteIndex{ type == Type::ENEMY ? palette::RED : palette::BLUE }
 {
-    this->setPosition(x, y);
+    if (type == Type::ENEMY) {
+        this->setPosition(MAX_X - 1, MAX_Y / 2);
+    } else {
+        this->setPosition(1, MAX_Y / 2);
+    }
 }
 
 void Paddle::setPosition(unsigned x, unsigned y) {
