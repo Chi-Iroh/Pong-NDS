@@ -74,8 +74,8 @@ int main() {
 
     while (true) {
         swiWaitForVBlank();
-        // player.draw();
-        // enemy.draw();
+        player.draw();
+        enemy.draw();
         ball.draw();
         oamUpdate(&oamMain);
     }

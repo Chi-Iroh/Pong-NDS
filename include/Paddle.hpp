@@ -1,9 +1,11 @@
 #pragma once
 #include <nds.h>
+#include <array>
 #include <optional>
 #include <utility>
 #include "Rotation.hpp"
 #include "ScreenSize.hpp"
+#include "Sprite.hpp"
 
 class Paddle {
 public:
@@ -14,11 +16,14 @@ public:
 
 private:
     unsigned x;
-    unsigned y[3];
+    std::array<unsigned, 3> y;
+    const std::array<Sprite, 3> sprites{};
+    std::array<u16*, 3> gfx;
     const unsigned paletteIndex;
 
 public:
     Paddle(Type type);
+    ~Paddle();
 
     void setPosition(unsigned x, unsigned y);
     void move(int x, int y);
