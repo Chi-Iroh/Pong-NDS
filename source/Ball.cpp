@@ -1,4 +1,3 @@
-#include <nds.h>
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
@@ -8,8 +7,26 @@
 #include "Rotation.hpp"
 #include "ScreenSize.hpp"
 
-Ball::Ball() {
+Ball::Ball() :
+    gfx{ oamAllocateGfx(&oamMain, SpriteSize_8x8, SpriteColorFormat_16Color) }
+{
     this->reset();
+    // SpriteMapping_1D_32 = 32 KB = 1 tile every 32 bytes (there are 1024 tiles)
+    // Our sprite is in 16 colors mode, thus 1 pixel = 1 color = 4 bits (2^4 = 16)
+    // A 8x8 sprite contains 64 pixels.
+    // The GFX is a u16 pointer, each element can hold 16 bits of data.
+    // Each color is held in 4 bits, thus each u16 element of the GFX holds 4 pixels.
+    // As each element of the GFX holds 4 pixels, we need 8x8/4 elements / iterations.
+    for (unsigned i{ 0 }; i < 8 * 8 / 4; i++) {
+        this->gfx[i] = palette::YELLOW;
+        this->gfx[i] = (this->gfx[i] << 4) | palette::YELLOW;
+        this->gfx[i] = (this->gfx[i] << 4) | palette::YELLOW;
+        this->gfx[i] = (this->gfx[i] << 4) | palette::YELLOW;
+    }
+}
+
+Ball::~Ball() {
+    oamFreeGfx(&oamMain, this->gfx);
 }
 
 std::pair<unsigned, unsigned> Ball::pos() const {
@@ -30,7 +47,23 @@ void Ball::rotate(Direction obstacleDirection) {
 }
 
 void Ball::draw() const {
-    ((u16*)BG_MAP_RAM(0))[this->y * WIDTH_N_TILES + this->x] = palette::Color::YELLOW;
+    oamSet(
+        &oamMain,
+        Sprite::ID,
+        this->x,
+        this->y,
+        0,
+        0,
+        SpriteSize_8x8,
+        SpriteColorFormat_16Color,
+        this->gfx,
+        -1,
+        false,
+        false,
+        false,
+        false,
+        false
+    );
 }
 
 void Ball::forward() {
