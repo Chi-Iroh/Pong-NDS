@@ -32,5 +32,5 @@ Here's a screenshot on DeSmuME emulator :
 This game is like a Pong, with a ball bouncing on edges and on 2 paddles, one controlled by a player and the other automatically moves towards the ball.  
 The player controls the blue paddle on the left, using up and down arrows of the D-pad.  
 At the beginning / after each point, the ball spawns on the center and goes on a random direction.  
-If the ball managed to go behind a paddle, its opponent wins a point.  
+If the ball manages to go behind a paddle, its opponent wins a point.  
 Both paddles and the ball are displayed on the top screen, and the points count is displayed on the bottom screen.  
