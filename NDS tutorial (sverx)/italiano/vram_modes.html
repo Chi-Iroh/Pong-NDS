@@ -1,0 +1,784 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Programmare il Nintendo DS - Tutorial sulla grafica 2D - Tabella
+  1</title>
+  <meta name="keywords" content="palette estese, effetto mosaico">
+  <style type="text/css" title="Amaya theme">
+/* Modern style for Amaya Editor Lite */
+
+/* default rules for the whole document */
+body {
+    font-size: 12pt;
+    font-family: Verdana;
+    font-weight: normal;
+    font-style: normal;
+    color: black;
+    background-color: white;
+    line-height: 1.2em;
+    margin-left: 4em;
+    margin-right: 2em;
+   }
+
+/* paragraphs */
+p  {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+
+pre {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+
+/* headings */
+h1 {
+    font-size: 180%;
+    font-weight: bold;
+    font-style: normal;
+    font-variant: small-caps;
+    text-align: left;
+    padding: 0;
+    margin-top: 1.7em;
+    margin-bottom: 1.7em;
+   }
+h2 {
+    font-size: 150%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.5em;
+    margin-bottom: 1.1em;
+   }
+h3 {
+    font-size: 130%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.3em;
+    margin-bottom: 1.1em;
+   }
+h4 {
+    font-size: 110%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.1em;
+    margin-bottom: 1.1em;
+   }
+h5 {
+    font-size: 100%;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+
+/* divisions */
+div {
+    padding: 0;
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+
+/* lists */
+ul, ol {
+    padding: 0 0 0 3em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+ul ul, ol ol, ul ol, ol ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+li {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+li p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+dl {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+   }
+dl dl {
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+dt {
+    padding: 0;
+    font-weight: bold;
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+dd {
+    padding: 0;
+    margin-top: .3em;
+    margin-left: 3em;
+    margin-bottom: .3em;
+   }
+dl p {
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+
+/* inline */
+strong {
+    font-weight: bold;
+   }
+em {
+    font-style: italic;
+   }
+code {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+ins {
+    background-color: yellow;
+    text-decoration: underline;
+   }
+del {
+    text-decoration: line-through;
+   }
+
+/* anchors */
+a[href] {
+    color: blue;
+    text-decoration: underline;
+   }
+
+/* end */
+  </style>
+</head>
+
+<body>
+<h2>La grafica 2D del Nintendo DS</h2>
+<hr>
+
+<h4>Tutte le modalità grafiche possibili per ognuno dei banchi di memoria
+video</h4>
+
+<table border="1">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Memoria<br>
+        (dimensione)</td>
+      <td>Modalità utilizzabili e descrizione</td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_A<br>
+        (128 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_A_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6800000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_BG</code></td>
+              <td>Sinonimo di <code>VRAM_A_MAIN_BG_0x06000000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_BG_0x06020000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 128
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_BG_0x06040000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 256
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_BG_0x06060000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 384
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_SPRITE</code></td>
+              <td>Sinonimo di <code>VRAM_A_MAIN_SPRITE_0x06400000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_SPRITE_0x06400000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_MAIN_SPRITE_0x06420000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 128 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_TEXTURE</code></td>
+              <td>Sinonimo di <code>VRAM_A_TEXTURE_SLOT0</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_TEXTURE_SLOT0<br>
+                </code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 0</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_TEXTURE_SLOT1<br>
+                </code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 1</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_TEXTURE_SLOT2<br>
+                </code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 2</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_A_TEXTURE_SLOT3</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 3</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_B<br>
+        (128 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_B_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6820000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_BG</code></td>
+              <td>Sinonimo di
+                <code>VRAM_B_MAIN_BG_0x06020000</code><sup>(1)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_BG_0x06020000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 128
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_BG_0x06040000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 256
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_BG_0x06060000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 384
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_SPRITE</code></td>
+              <td>Sinonimo di
+                <code>VRAM_B_MAIN_SPRITE_0x06420000</code><sup>(1)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_SPRITE_0x06400000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_MAIN_SPRITE_0x06420000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 128 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_TEXTURE</code></td>
+              <td>Sinonimo di <code>VRAM_B_TEXTURE_SLOT1</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_TEXTURE_SLOT0</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 0</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_TEXTURE_SLOT1</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 1</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_TEXTURE_SLOT2</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 2</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_B_TEXTURE_SLOT3</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 3</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_C<br>
+        (128 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_C_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6840000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_MAIN_BG</code></td>
+              <td>Sinonimo di
+                <code>VRAM_C_MAIN_BG_0x06040000</code><sup>(1)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_MAIN_BG_0x06020000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 128
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_MAIN_BG_0x06040000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 256
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_MAIN_BG_0x06060000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 386
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_ARM7</code></td>
+              <td>Sinonimo di <code>VRAM_C_ARM7_0x06000000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_ARM7_0x06000000</code></td>
+              <td>Accesso riservato al processore secondario (ARM7)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_ARM7_0x06020000</code></td>
+              <td>Accesso riservato al processore secondario (ARM7)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_SUB_BG</code></td>
+              <td>Sinonimo di <code>VRAM_C_SUB_BG_0x06200000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_SUB_BG_0x06200000</code></td>
+              <td><strong>SUB</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_TEXTURE</code></td>
+              <td>Sinonimo di <code>VRAM_C_TEXTURE_SLOT2</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_TEXTURE_SLOT0</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 0</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_TEXTURE_SLOT1</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 1</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_TEXTURE_SLOT2</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 2</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_C_TEXTURE_SLOT3</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 3</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_D<br>
+        (128 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_D_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6860000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_MAIN_BG</code></td>
+              <td>Sinonimo di
+                <code>VRAM_D_MAIN_BG_0x06060000</code><sup>(1)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_MAIN_BG_0x06020000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 128
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_MAIN_BG_0x06040000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 256
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_MAIN_BG_0x06060000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 384
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_ARM7</code></td>
+              <td>Sinonimo di
+                <code>VRAM_D_ARM7_0x06020000</code><sup>(1)<code></code></sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_ARM7_0x06000000</code></td>
+              <td>Accesso riservato al processore secondario (ARM7)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_ARM7_0x06020000</code></td>
+              <td>Accesso riservato al processore secondario (ARM7)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_SUB_SPRITE</code></td>
+              <td><strong>SUB</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_TEXTURE</code></td>
+              <td>Sinonimo di <code>VRAM_D_TEXTURE_SLOT3</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_TEXTURE_SLOT0</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 0</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_TEXTURE_SLOT1</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 1</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_TEXTURE_SLOT2</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 2</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_D_TEXTURE_SLOT3</code></td>
+              <td><strong>MAIN</strong>:Memoria delle texture, banco 3</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_E<br>
+        (64 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_E_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6880000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_E_MAIN_BG</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_E_MAIN_SPRITE</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_E_TEX_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette delle texture<sup>(2)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_E_BG_EXT_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette estese dei
+                background<sup>(2)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_F<br>
+        (16 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_F_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6890000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_BG</code></td>
+              <td>Sinonimo di <code>VRAM_F_MAIN_BG_0x06000000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_BG_0x06004000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 16
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_BG_0x06010000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 64
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_BG_0x06014000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 80
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_SPRITE</code></td>
+              <td>Sinonimo di <code>VRAM_F_MAIN_SPRITE_0x06400000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_SPRITE_0x06400000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_SPRITE_0x06404000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 16 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_SPRITE_0x06410000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 64 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_MAIN_SPRITE_0x06414000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 80 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_TEX_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette delle texture<sup>(2)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_BG_EXT_PALETTE</code></td>
+              <td>Sinonimo di <code>VRAM_F_BG_EXT_PALETTE_SLOT01</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_BG_EXT_PALETTE_SLOT01</code></td>
+              <td><strong>MAIN</strong>:Palette estese dei background 0 e
+                1<sup>(2)</sup> </td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_BG_EXT_PALETTE_SLOT23</code></td>
+              <td><strong>MAIN</strong>:Palette estese dei background 2 e
+                3<sup>(2)(3)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_F_SPRITE_EXT_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette estese degli
+                sprite<sup>(2)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_G<br>
+        (16 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_G_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6894000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_BG</code></td>
+              <td>Sinonimo di <code>VRAM_G_MAIN_BG_0x06000000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_BG_0x06000000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_BG_0x06004000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 16
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_BG_0x06010000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 64
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_BG_0x06014000</code></td>
+              <td><strong>MAIN</strong>:Memoria dei background, offset 80
+              KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_SPRITE</code></td>
+              <td>Sinonimo di <code>VRAM_G_MAIN_SPRITE_0x06400000</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_SPRITE_0x06400000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_SPRITE_0x06404000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 16 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_SPRITE_0x06410000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 64 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_MAIN_SPRITE_0x06414000</code></td>
+              <td><strong>MAIN</strong>:Memoria degli sprite, offset 80 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_TEX_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette delle texture<sup>(2)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_BG_EXT_PALETTE</code></td>
+              <td>Sinonimo di <code>VRAM_G_BG_EXT_PALETTE_SLOT01</code></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_BG_EXT_PALETTE_SLOT01</code></td>
+              <td><strong>MAIN</strong>:Palette estese dei background 0 e
+                1<sup>(2)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_BG_EXT_PALETTE_SLOT23</code></td>
+              <td><strong>MAIN</strong>:Palette estese dei background 2 e
+                3<sup>(2)(3)</sup></td>
+            </tr>
+            <tr>
+              <td><code>VRAM_G_SPRITE_EXT_PALETTE</code></td>
+              <td><strong>MAIN</strong>:Palette estese degli
+                sprite<sup>(2)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_H<br>
+        (32 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_H_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x6898000</em>)</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_H_SUB_BG</code></td>
+              <td><strong>SUB</strong>:Memoria dei background, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_H_SUB_BG_EXT_PALETTE</code></td>
+              <td><strong>SUB</strong>:Palette estese dei
+                background<sup>(2)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_I<br>
+        (16 KB)</td>
+      <td>
+        <table border="1" style="width: 100%">
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td><code>VRAM_I_LCD</code></td>
+              <td>Accesso diretto (indirizzo <em>0x68A0000</em>) </td>
+            </tr>
+            <tr>
+              <td><code>VRAM_I_SUB_BG_0x06208000</code></td>
+              <td><strong>SUB</strong>:Memoria dei background, offset 32 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_I_SUB_SPRITE</code></td>
+              <td><strong>SUB</strong>:Memoria degli sprite, offset 0 KB</td>
+            </tr>
+            <tr>
+              <td><code>VRAM_I_SUB_SPRITE_EXT_PALETTE</code></td>
+              <td><strong>SUB</strong>:Palette estese degli
+                sprite<sup>(2)</sup> </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p style="text-align:justify;">Note:</p>
+
+<p style="text-align:justify;">(1): Questi sinonimi possono essere fuorvianti
+poichè configurano il banco di memoria ad indirizzi che non sono all'inizio
+della memoria dei background/degli sprite. Per quanto possibile non usate
+questi sinonimi, eviterete problemi.</p>
+
+<p style="text-align:justify;">(2): Quando il banco di memoria è configurato
+come palette delle texture o palette estese dei background/degli sprite, la
+memoria non è raggiungibile dal processore. Di conseguenza per leggere/scrivere
+all'interno di questi banchi sarà necessario temporaneamente cambiare
+modalità.</p>
+
+<p style="text-align:justify;">(3): I background 0 e 1 possono usare
+rispettivamente le palette estese dei background 2 e 3, se opportunamente
+configurati.</p>
+
+<p></p>
+<hr>
+
+<p>Sverx, 7 Ottobre 2010. Ultima modifica il 7 Ottobre 2010.</p>
+<hr>
+
+<p>Domande? Dubbi? Suggerimenti? Vuoi scambiare due parole con me? Ho preparato
+un <a href="http://libxm7.s2.bizhat.com/index.php?c=3&amp;mforum=libxm7">forum
+apposta</a>!</p>
+
+<p>Torna all'<a href="index.html">indice</a> per accedere alle altre
+sezioni.</p>
+
+<p><sup>riferimenti:</sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram">http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram</a></sup></p>
+
+<p></p>
+</body>
+</html>

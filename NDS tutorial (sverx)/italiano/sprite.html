@@ -1,0 +1,1297 @@
+<html>
+<head>
+  <title>Programmare il Nintendo DS - Tutorial sulla grafica 2D - parte
+  II</title>
+  <meta name="keywords" content="sprite, bitmap objects, OAM, DMA">
+  <style type="text/css" title="Amaya theme">
+/* Modern style for Amaya Editor Lite */
+
+/* default rules for the whole document */
+body {
+    font-size: 12pt;
+    font-family: Verdana;
+    font-weight: normal;
+    font-style: normal;
+    color: black;
+    background-color: white;
+    line-height: 1.2em;
+    margin-left: 4em;
+    margin-right: 2em;
+   }
+
+/* paragraphs */
+p  {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+
+pre {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+
+/* headings */
+h1 {
+    font-size: 180%;
+    font-weight: bold;
+    font-style: normal;
+    font-variant: small-caps;
+    text-align: left;
+    padding: 0;
+    margin-top: 1.7em;
+    margin-bottom: 1.7em;
+   }
+h2 {
+    font-size: 150%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.5em;
+    margin-bottom: 1.1em;
+   }
+h3 {
+    font-size: 130%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.3em;
+    margin-bottom: 1.1em;
+   }
+h4 {
+    font-size: 110%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.1em;
+    margin-bottom: 1.1em;
+   }
+h5 {
+    font-size: 100%;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+
+/* divisions */
+div {
+    padding: 0;
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+
+/* lists */
+ul, ol {
+    padding: 0 0 0 3em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+ul ul, ol ol, ul ol, ol ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+li {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+li p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+dl {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+   }
+dl dl {
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+dt {
+    padding: 0;
+    font-weight: bold;
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+dd {
+    padding: 0;
+    margin-top: .3em;
+    margin-left: 3em;
+    margin-bottom: .3em;
+   }
+dl p {
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+
+/* inline */
+strong {
+    font-weight: bold;
+   }
+em {
+    font-style: italic;
+   }
+code {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+ins {
+    background-color: yellow;
+    text-decoration: underline;
+   }
+del {
+    text-decoration: line-through;
+   }
+
+/* anchors */
+a[href] {
+    color: blue;
+    text-decoration: underline;
+   }
+
+/* end */
+  </style>
+</head>
+
+<body>
+<h2>La grafica 2D del Nintendo DS</h2>
+<hr>
+
+<h4>Gli sprite</h4>
+
+<p style="text-align:justify;">Ognuno dei due motori grafici del Nintendo DS
+integra dell'hardware dedicato alla visualizzazione degli sprite. E' piuttosto
+potente e flessibile e permette di gestire fino a 128 sprite
+contemporaneamente, ognuno a 16 o 256 colori (o anche a 32768 colori,
+attraverso i <em>bitmap objects</em>), e possono essere quadrati o rettangolari
+di varie dimensioni partendo dal pi&#xf9; piccolo possibile, 8x8 pixel, fino al
+pi&#xf9; grande, il 64x64 pixel. Il motore grafico &#xe8; in grado anche di
+disegnare lo sprite ribaltato orizzontalmente (mirror) e/o verticalmente (flip)
+e gli sprite dichiarati di un certo tipo possono anche essere ruotati e/o
+ridimensionati. Oltre a questo si possono anche dichiarare sprite
+semitrasparenti e anche attivare un <em>effetto mosaico</em> su di essi.</p>
+
+<p style="text-align:justify;">In modo simile a come vengono archiviate in
+memoria le tessere per i <em>background</em> di tipo testo, anche per gli
+sprite bisogner&#xe0; memorizzare dei blocchetti di 8x8 pixel che poi verranno
+visualizzati affiancati per definire ogni singolo sprite: per questo le
+dimensioni possibili per gli sprite sono tutte multiple di 8x8 pixel. Ecco
+tutte le possibilit&#xe0; e come ottenerle attraverso le costanti definite in
+<em>libnds</em> (in <code>sprite.h</code>), che saranno necessarie per
+impostare gli attributi di <em>taglia</em> e di <em>forma</em> dello sprite:</p>
+
+<table border="1">
+  <col>
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Dimensione <sup>(pixel, HxV)</sup></td>
+      <td>Taglia <sup>(14&#xb0; e 15&#xb0; bit dell'attributo 1)</sup></td>
+      <td>Forma <sup>(14&#xb0; e 15&#xb0; bit dell'attributo 0)</sup></td>
+    </tr>
+    <tr>
+      <td>8x8</td>
+      <td><code>ATTR1_SIZE_8</code></td>
+      <td><code>ATTR0_SQUARE</code></td>
+    </tr>
+    <tr>
+      <td>16x8</td>
+      <td><code>ATTR1_SIZE_8</code></td>
+      <td><code>ATTR0_WIDE</code></td>
+    </tr>
+    <tr>
+      <td>8x16</td>
+      <td><code>ATTR1_SIZE_8</code></td>
+      <td><code>ATTR0_TALL</code></td>
+    </tr>
+    <tr>
+      <td>16x16</td>
+      <td><code>ATTR1_SIZE_16</code></td>
+      <td><code>ATTR0_SQUARE</code></td>
+    </tr>
+    <tr>
+      <td>32x8</td>
+      <td><code>ATTR1_SIZE_16</code></td>
+      <td><code>ATTR0_WIDE</code></td>
+    </tr>
+    <tr>
+      <td>8x32</td>
+      <td><code>ATTR1_SIZE_16</code></td>
+      <td><code>ATTR0_TALL</code></td>
+    </tr>
+    <tr>
+      <td>32x32</td>
+      <td><code>ATTR1_SIZE_32</code></td>
+      <td><code>ATTR0_SQUARE</code></td>
+    </tr>
+    <tr>
+      <td>32x16</td>
+      <td><code>ATTR1_SIZE_32</code></td>
+      <td><code>ATTR0_WIDE</code></td>
+    </tr>
+    <tr>
+      <td>16x32</td>
+      <td><code>ATTR1_SIZE_32</code></td>
+      <td><code>ATTR0_TALL</code></td>
+    </tr>
+    <tr>
+      <td>64x64</td>
+      <td><code>ATTR1_SIZE_64</code></td>
+      <td><code>ATTR0_SQUARE</code></td>
+    </tr>
+    <tr>
+      <td>64x32</td>
+      <td><code>ATTR1_SIZE_64</code></td>
+      <td><code>ATTR0_WIDE</code></td>
+    </tr>
+    <tr>
+      <td>32x64</td>
+      <td><code>ATTR1_SIZE_64</code></td>
+      <td><code>ATTR0_TALL</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">Prima di entrare nel vivo della dichiarazione
+degli sprite, &#xe8; necessario chiarire come i blocchetti di 8x8 pixel devono
+essere memorizzati nei banchi di memoria video per poter poi essere
+correttamente utilizzati. A questo riguardo noi tratteremo solo una delle due
+modalit&#xe0; possibili, che niente hanno a che vedere con lo sprite in s&#xe9;
+bens&#xec; solo con il sistema di memorizzazione dei blocchetti in memoria: la
+modalit&#xe0; 1D. Questo perch&#xe9; l'altra modalit&#xe0; (chiamata 2D)
+apporta pochissimi vantaggi (pu&#xf2; apparire pi&#xf9; semplice) ma introduce
+grandi svantaggi, il principale &#xe8; che limita la memoria utilizzabile a 32
+KB al massimo per ciascuno dei due motori grafici, mentre con la modalit&#xe0;
+1D sar&#xe0; possibile utilizzare fino a 256 KB di memoria video per i nostri
+sprite sul motore principale e fino a 128 KB sul motore secondario.</p>
+
+<p style="text-align:justify;">Nella modalit&#xe0; 1D ognuna delle tessere di
+8x8 pixel appartenenti al medesimo sprite deve essere contigua alla precedente
+e la prima di queste tessere deve essere posizionata in memoria in una
+locazione allineata ad un certo limite che cambia a seconda di quanta memoria
+vorremo assegnare agli sprite. Lo chiariremo meglio pi&#xf9; avanti, per ora
+affrontiamo il problema della contiguit&#xe0; delle tessere.</p>
+
+<p style="text-align:justify;">Come abbiamo detto ogni sprite &#xe8; definito
+come una o pi&#xf9; tessere di 8x8 pixel affiancate e/o sovrapposte.
+Perch&#xe9; lo sprite sia definito correttamente &#xe8; obbligatorio
+memorizzare le tessere in memoria partendo da quella in alto a sinistra e
+procedendo a destra per poi andare a capo nella eventuale riga successiva,
+ovvero come faremmo leggendo un testo.</p>
+
+<p style="text-align:justify;">Ecco due esempi: dentro ogni quadratino il
+numero indica quale numero avr&#xe0; la tessera in memoria.</p>
+
+<table border="0" style="width: 100%">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td style="text-align:center;"><p><em>sprite 32x16 all'inizio della
+        memoria</em></p>
+
+        <table border="1">
+          <col>
+          <col>
+          <col>
+          <col>
+          <tbody>
+            <tr>
+              <td>&#xa0;0</td>
+              <td>&#xa0;1</td>
+              <td>&#xa0;2</td>
+              <td>&#xa0;3</td>
+            </tr>
+            <tr>
+              <td>&#xa0;4</td>
+              <td>&#xa0;5</td>
+              <td>&#xa0;6</td>
+              <td>&#xa0;7</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>&#xa0;</p>
+      </td>
+      <td style="text-align:center;"><p><em>sprite 8x32 memorizzato a partire
+        dalla tessera 64</em></p>
+
+        <table border="1">
+          <col>
+          <tbody>
+            <tr>
+              <td>64</td>
+            </tr>
+            <tr>
+              <td>65</td>
+            </tr>
+            <tr>
+              <td>66</td>
+            </tr>
+            <tr>
+              <td>67</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">Il numero della tessera che si trova pi&#xf9; in
+alto e pi&#xf9; a sinistra sar&#xe0; il numero a cui faremo riferimento quando
+chiederemo al nostro Nintendo DS di visualizzare lo sprite. Il numero massimo
+possibile &#xe8; solo 1023 e proprio per questo motivo, ovvero per poter avere
+in memoria pi&#xf9; di 1024 tessere, nella modalit&#xe0; 1D (e, appunto, solo
+in questa modalit&#xe0;) si usa un trucco che consente di raddoppiare,
+quadruplicare o ottuplicare la memoria utilizzabile per le tessere componenti
+gli sprite semplicemente assegnando il successivo numero di tessera solo ad una
+tessera ogni 2, oppure solo ad una tessera ogni 4, o ancora solamente a una
+tessera ogni 8. Le tessere senza numero, quindi, non potranno contenere
+l'inizio di uno sprite ma solo i suoi blocchetti successivi. Ricordatevi anche
+che ogni tessera a 16 colori occupa solo 32 byte (ogni byte contiene 2 pixel)
+mentre ogni tessera a 256 colori occupa 64 byte (un byte per ogni pixel).</p>
+
+<p style="text-align:justify;">Oltre alla costante
+<code>DISPLAY_SPR_ACTIVE</code>, necessaria ad attivare gli sprite, e alla
+costante <code>DISPLAY_SPR_1D</code>, necessaria per informare il motore che
+gli sprite sono immagazzinati in memoria con modalit&#xe0; 1D, vengono definite
+in <em>libnds</em> (nel file <code>video.h</code>) le seguenti costanti che
+sono anche queste da utilizzare nella funzione <code>videoSetMode()</code> (di
+cui abbiamo gi&#xe0; parlato) quando vogliamo attivare anche gli sprite, oltre
+alla modalit&#xe0; prescelta per i <em>background</em>:</p>
+
+<table border="1">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Costante</td>
+      <td>Significato</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_SIZE_32</code></td>
+      <td style="text-align:justify;">Potremo usare fino a 32 KB per gli
+        sprite.<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 32 byte: quindi un
+        nuovo numero per ogni tessera a 16 colori e 2 nuovi numeri per ogni
+        tessera a 256 colori.</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_SIZE_64</code></td>
+      <td style="text-align:justify;">Potremo usare fino a 64 KB per gli
+        sprite.<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 64 byte: quindi un
+        nuovo numero ogni 2 tessere a 16 colori e un nuovo numero ogni tessera
+        a 256 colori.</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_SIZE_128</code></td>
+      <td style="text-align:justify;">Potremo usare fino a 128 KB per gli
+        sprite.<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 128 byte: quindi un
+        nuovo numero ogni 4 tessere a 16 colori e un nuovo numero ogni 2
+        tessere a 256 colori.</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_SIZE_256</code></td>
+      <td style="text-align:justify;">Potremo usare fino a 256 KB per gli
+        sprite (solo per il <em>MAIN engine</em>).<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 256 byte: quindi un
+        nuovo numero ogni 8 tessere a 16 colori e un nuovo numero ogni 4
+        tessere a 256 colori.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">Personalmente trovo questo sistema oltremodo
+complicato e preferisco ragionare in modo diverso. Ad esempio usando gli sprite
+a 256 colori e con 128 KB di memoria dedicati agli sprite preferisco pensare
+che vi siano 2048 possibili tessere invece di 1024 e definisco una macro da
+usare quando si dovr&#xe0; referenziare la prima tessera dello sprite. Ad
+esempio qualcosa di questo tipo:</p>
+
+<p><code>#define TILE256_1D_128K(n) ((n)&gt;&gt;1)</code></p>
+
+<p style="text-align:justify;">A questo punto mi basta ricordare, in fase di
+caricamento degli sprite in memoria, di iniziare a caricare ogni sprite in modo
+che la sua prima tessera occupi una locazione pari. Analogamente per 256 KB di
+memoria video calcolo di avere 4096 possibili tessere (sempre a 256 colori) e
+mi definisco la seguente macro:</p>
+
+<p><code>#define TILE256_1D_256K(n) ((n)&gt;&gt;2)</code></p>
+
+<p style="text-align:justify;">cos&#xec; quindi basta ricordare di iniziare a
+caricare ogni sprite in modo che la sua prima tessera occupi una locazione
+multipla di 4.</p>
+
+<h4>L'<em>OAM</em></h4>
+
+<p style="text-align:justify;">Ogni motore grafico del Nintendo DS ha un'area
+di memoria riservata dove memorizzare gli attributi di ogni oggetto (gli
+sprite): l'<em>Object Attribute Memory</em>, appunto <em>OAM</em>. Questa
+memoria &#xe8; riservata alla definizione dei 3 attributi necessari per ogni
+singolo sprite; ogni attributo per&#xf2; non &#xe8; una singola propriet&#xe0;,
+bisogna pensare piuttosto ai 3 attributi insieme come ad un coacervo di tutte
+le propriet&#xe0; dello sprite: il suo tipo, la sua taglia, la sua forma, la
+sua posizione sullo schermo, il suo numero di colori, la sua eventuale
+semitrasparenza e i suoi effetti come ad esempio l'effetto mosaico. Il tutto
+ammassato in 48 bit (16 bit per 3 attributi). Vediamo quindi come sono
+distribuite le propriet&#xe0; sugli attributi e quali sono le costanti definite
+da <em>libnds</em> (in <code>sprite.h</code>) per ogni propriet&#xe0;:</p>
+
+<table border="1">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Attributo</td>
+      <td>Propriet&#xe0;</td>
+    </tr>
+    <tr>
+      <td>Attributo 0</td>
+      <td>Tipo: 
+
+        <p><code>ATTR0_NORMAL<br>
+        ATTR0_ROTSCALE<br>
+        ATTR0_ROTSCALE_DOUBLE<br>
+        ATTR0_DISABLED</code></p>
+
+        <p>Subtipo:</p>
+
+        <p><code>ATTR0_TYPE_NORMAL<br>
+        ATTR0_TYPE_BLENDED<br>
+        ATTR0_TYPE_WINDOWED<br>
+        ATTR0_BMP</code></p>
+
+        <p>Forma:</p>
+
+        <p><code>ATTR0_SQUARE<br>
+        ATTR0_WIDE<br>
+        ATTR0_TALL</code></p>
+
+        <p>Colori:</p>
+
+        <p><code>ATTR0_COLOR_16<br>
+        ATTR0_COLOR_256</code></p>
+
+        <p>Effetto mosaico (flag):</p>
+
+        <p><code>ATTR0_MOSAIC</code></p>
+
+        <p>Posizione Y sullo schermo: (0-255)</p>
+
+        <p><code>OBJ_Y(m)</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td>Attributo 1</td>
+      <td>Taglia: 
+
+        <p><code>ATTR1_SIZE_8<br>
+        ATTR1_SIZE_16<br>
+        ATTR1_SIZE_32<br>
+        ATTR1_SIZE_64</code></p>
+
+        <p>Ribaltamenti:</p>
+
+        <p><code>ATTR1_FLIP_X<br>
+        ATTR1_FLIP_Y</code></p>
+
+        <p>Indice nell'array dei dati di rotazione (solo per gli sprite
+        rotazionali): (0-31)</p>
+
+        <p><code>ATTR1_ROTDATA(n)</code></p>
+
+        <p>Posizione X sullo schermo: (0-511)</p>
+
+        <p><code>OBJ_X(m)</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td>Attributo 2</td>
+      <td>Priorit&#xe0;: (0-3) 
+
+        <p><code>ATTR2_PRIORITY(n)</code></p>
+
+        <p>Palette (solo con le <em>palette estese</em> attive): (0-15)</p>
+
+        <p><code>ATTR2_PALETTE(n)</code></p>
+
+        <p>Trasparenza (solo per i <em>bitmap objects</em>): (0-15)</p>
+
+        <p><code>ATTR2_ALPHA(n)</code></p>
+
+        <p>Tessera in memoria dove &#xe8; memorizzato il primo blocchetto dello
+        sprite: (0-1023)</p>
+
+        <p>(nessuna macro definita, conviene fare <code>&amp; 0x03ff</code> per
+        evitare sovrascritture degli altri bit)</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Come si pu&#xf2; vedere le propriet&#xe0; sono davvero molte, entriamo nel
+dettaglio delle principali, parleremo delle altre quando ne avremo bisogno.</p>
+<ul>
+  <li style="text-align:justify;">Attributo 0: Le propriet&#xe0; Tipo e Subtipo
+    sono correlate, seppur non strettamente. Lo sprite pu&#xf2; essere
+    disattivato (e quindi non essere disegnato per niente e non pesare nemmeno
+    sull'hardware), pu&#xf2; essere semplicemente un rettangolino senza nessuna
+    capacit&#xe0; particolare, pu&#xf2; essere di tipo ruotabile e
+    ridimensionabile, in modo simile ai <em>background</em> rotazionali,
+    pu&#xf2; essere rotazionale con le dimensioni 'esterne' raddoppiate sia in
+    altezza che larghezza (parleremo di questo argomento pi&#xf9; avanti). Poi
+    pu&#xf2; essere disegnato cos&#xec; come l'abbiamo definito, oppure
+    pu&#xf2; essere semitrasparente (<em>blended</em>) o ancora non essere per
+    niente visualizzato ma servire solo a definire una maschera per altri
+    sprite o per i <em>background</em> (<em>window objects</em>, non
+    approfondiremo l'argomento per ora). Oppure pu&#xf2; essere un <em>bitmap
+    object</em>, uno sprite un po' particolare a 32768 colori. Forma e Colori
+    sono quelli che abbiamo gi&#xe0; affrontato prima e dell'effetto mosaico
+    parleremo alla fine di questo documento. Molto importante invece ricordare
+    che in questo attributo viene memorizzata la coordinata verticale (Y) dove
+    si deve trovare sullo schermo il pixel superiore sinistro dello sprite. Il
+    valore &#xe8; espresso su 8 bit senza segno (valori tra 0 e 255) ma dovete
+    considerare che in realt&#xe0;, per via del <em>wrapping</em>, si pu&#xf2;
+    impostare questa propriet&#xe0; ad un valore negativo (quindi tagliando in
+    alto fuori dallo schermo la parte superiore dello sprite) semplicemente
+    impostando un valore superiore a 192. Ad esempio per il valore -1 basta
+    impostare 255, il valore 254 per -2 e cos&#xec; via. Quindi, per
+    semplicit&#xe0;, potete immaginare che sia un intero <em>con segno</em> su
+    8 bit se il valore espresso sull'intero <em>senza segno</em> supera
+  192.</li>
+  <li style="text-align:justify;">Attributo 1: Della propriet&#xe0; Taglia si
+    &#xe8; gi&#xe0; detto e dei Ribaltamenti l'unica cosa da chiarire &#xe8;
+    che lo sprite sar&#xe0; disegnato ribaltato orizzontalmente e/o
+    verticalmente a seconda se vengono impostati questi due flag, ma l'angolo
+    superiore sinistro del rettangolino che contiene l'immagine ribaltata
+    sar&#xe0; comunque sempre nella posizione indicata dalle propriet&#xe0; di
+    posizione. Della propriet&#xe0; dei dati di rotazione parleremo nel
+    paragrafo riguardo gli sprite rotazionali, mentre invece &#xe8; molto
+    importante in questo attributo la propriet&#xe0; dove viene memorizzata la
+    coordinata orizzontale (X) alla quale si deve trovare l'angolo superiore
+    sinistro dello sprite: il valore &#xe8; espresso su 9 bit senza segno
+    (valori tra 0 e 511) ma, analogamente alla propriet&#xe0; Y nell'attributo
+    0, si pu&#xf2; ottenere un negativo (uno sprite tagliato fuori a sinistra
+    dello schermo) semplicemente impostando un valore superiore a 256. Ad
+    esempio 511 &#xe8; -1, 510 &#xe8; -2 e cos&#xec; via. Quindi in realt&#xe0;
+    &#xe8; come se fosse un intero con segno rappresentato su 9 bit, con valori
+    tra -256 e +255, il che implica che si pu&#xf2; usare un normalissimo
+    intero con segno e mascherare i bit oltre il nono.</li>
+  <li style="text-align:justify;">Attributo 2: La propriet&#xe0; Priorit&#xe0;
+    indica come dovranno essere sovrapposti gli sprite tra di loro e riguardo i
+    <em>background</em>. Come di norma, il valore 0 indica la priorit&#xe0;
+    pi&#xf9; alta, e gli sprite con priorit&#xe0; 0 saranno tutti disegnati
+    sopra tutti i <em>background</em>. Gli sprite di identica priorit&#xe0;
+    avranno precedenza nell'ordine con cui sono definiti nell'<em>OAM</em>,
+    ovvero quelli che hanno un indice pi&#xf9; basso in questa tabella degli
+    attributi degli oggetti saranno disegnati davanti agli altri. Infine uno
+    sprite con priorit&#xe0; pi&#xf9; bassa (numero pi&#xf9; alto) sar&#xe0;
+    disegnato dietro ai background con priorit&#xe0; maggiore (numero pi&#xf9;
+    basso); ad esempio definendo uno sprite con priorit&#xe0; 1 questo
+    risulter&#xe0; dietro a tutti i background ai quali &#xe8; stata data
+    priorit&#xe0; 0. A parit&#xe0; di priorit&#xe0; tra un background e uno
+    sprite sar&#xe0; lo sprite ad essere disegnato davanti. Della Palette
+    parleremo quando affronteremo le <em>palette estese</em> e la
+    propriet&#xe0; di Trasparenza, relativa ai soli <em>bitmap object</em>,
+    &#xe8; vincolata agli effetti grafici e, per ora, non ne parleremo. Infine
+    gli ultimi 10 bit di questo attributo servono a definire quale &#xe8; la
+    prima tessera di questo sprite nella memoria video assegnata; i valori
+    validi sono tra 0 e 1023 e funziona come &#xe8; stato spiegato in dettaglio
+    prima.</li>
+</ul>
+
+<p style="text-align:justify;">Nell'esempio che segue definiremo uno sprite di
+16x16 pixel a 16 colori e lo sposteremo sullo schermo trascinando il pennino,
+in modo analogo a come abbiamo fatto in uno degli esempi dei
+<em>background</em>, ma questa volta senza attivare nessun
+<em>background</em>.</p>
+<pre>#include &lt;nds.h&gt;
+
+// una comoda define...
+#define TILE16_1D_128K(n) ((n)&gt;&gt;2)
+
+int main(void) {
+
+  // il nostro array di sprite (sull'OAM)
+  OAMTable* Sprites = (OAMTable*)OAM;
+
+  // azzeriamo l'OAM (disabilitiamo tutti gli sprite)
+  int i;
+  for (i=0;i&lt;128;i++)
+    Sprites-&gt;oamBuffer[i].attribute[0]=ATTR0_DISABLED | OBJ_Y(192);
+    
+  // impostiamo la memoria video (banco A) per gli sprite
+  vramSetBankA (VRAM_A_MAIN_SPRITE);
+  
+  // impostiamo il modo 0 sul MAIN engine e attiviamo gli sprite (modo 1D, 128KB RAM)
+  videoSetMode (MODE_0_2D|DISPLAY_SPR_ACTIVE|DISPLAY_SPR_1D|DISPLAY_SPR_1D_SIZE_128);
+  
+  // creiamo lo sprite 16x16, 4 bpp (32 bytes x 4 tessere)
+  u32 Sprite[8*4] = 
+  {
+    0x10000000,
+    0x21000000,
+    0x22100000,
+    0x22210000,
+    0x00001000,
+    0x00000100,
+    0x00000010,
+    0x00000001,
+  
+    0x00000001,
+    0x00000012,
+    0x00000122,
+    0x00001222,
+    0x00010000,
+    0x00100000,
+    0x01000000,
+    0x10000000,
+    
+    0x00000001,
+    0x00000010,
+    0x00000100,
+    0x00001000,
+    0x22210000,
+    0x22100000,
+    0x21000000,
+    0x10000000,
+    
+    0x10000000,
+    0x01000000,
+    0x00100000,
+    0x00010000,
+    0x00001222,
+    0x00000122,
+    0x00000012,
+    0x00000001
+  };
+  
+  // copiamo le tessere in memoria video (32 bytes ognuna)
+  swiCopy(Sprite, SPRITE_GFX, 32*4);
+  
+  // impostiamo la palette ai colori 0=nero, 1=blu intenso, 2=bianco
+  SPRITE_PALETTE [0] = RGB5(0,0,0);
+  SPRITE_PALETTE [1] = RGB5(0,0,31);
+  SPRITE_PALETTE [2] = RGB5(31,31,31);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  int down_X=0, down_Y=0;
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // abbiamo appena toccato il touch screen?
+    if (keysDown() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // memorizziamola per vedere dove va a finire
+      down_X=touch.px;
+      down_Y=touch.py;
+    }
+  
+    // oppure siamo ancora appoggiati sul touch screen?
+    else if (keysHeld() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // sposta lo sprite 0 seguendo il trascinamento
+      Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_NORMAL|ATTR0_TYPE_NORMAL|ATTR0_COLOR_16
+                                        |ATTR0_SQUARE|OBJ_Y((192-16)/2-down_Y+touch.py);
+      Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16|OBJ_X((256-16)/2-down_X+touch.px);
+      Sprites-&gt;oamBuffer[0].attribute[2]=ATTR2_PRIORITY(0)|(TILE16_1D_128K(0) &amp; 0x03ff);
+    }
+    
+    // altrimenti riallinea lo sprite al centro
+    else {
+     
+      // sposta lo sprite 0 al centro
+      Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_NORMAL|ATTR0_TYPE_NORMAL|ATTR0_COLOR_16
+                                        |ATTR0_SQUARE|OBJ_Y((192-16)/2);
+      Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16|OBJ_X((256-16)/2);
+      Sprites-&gt;oamBuffer[0].attribute[2]=ATTR2_PRIORITY(0)|(TILE16_1D_128K(0) &amp; 0x03ff);
+    }
+    
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p style="text-align:justify;">Nell'esempio si nota subito che abbiamo dovuto
+disattivare tutti gli sprite prima di iniziare: se non avessimo fatto questo ci
+saremmo trovati con tutti gli sprite accatastati nell'angolo in alto a sinistra
+dello schermo. Invece attraverso la propriet&#xe0; <code>ATTR0_DISABLED</code>
+segnaliamo che lo sprite non &#xe8; da disegnare. Per disattivare uno sprite,
+oltre a impostare questa modalit&#xe0;, molte fonti consigliano anche di
+impostare la coordinata Y al valore 192 cos&#xec; da alleggerire il carico di
+lavoro al motore degli sprite che sembrerebbe prima confrontare questo valore
+con la <em>scanline</em> (riga di pixel dello schermo) che sta disegnando in
+quel momento e solo dopo controllare se lo sprite &#xe8; attivo o meno.
+Un'altra cosa molto importante che si nota dall'esempio &#xe8; che
+<em>libnds</em> definisce un tipo <code>OAMTable</code>, un array di 128
+strutture <code>oamBuffer</code> per accedere direttamente ad ogni singolo
+attributo di ogni singolo sprite, cos&#xec; che risulti molto semplice accedere
+all'<em>OAM</em>.</p>
+
+<p style="text-align:justify;">Prestando molta attenzione invece a come abbiamo
+definito le 4 tessere che compongono il nostro sprite, forse vi sarete accorti
+che sembrano ribaltate orizzontalmente. Invece non &#xe8; cos&#xec; ma,
+semplicemente, i pixel di ogni tessera vengono disegnati da sinistra verso
+destra (come ci si pu&#xf2; aspettare) ma devono essere memorizzati nella
+memoria video dal meno significativo al pi&#xf9; significativo, per questo
+<code>0x00000001</code> assegna il colore 1 al pixel pi&#xf9; a sinistra (tra
+gli 8 pixel orizzontali per ciascuna riga di questa tessera a 16 colori) mentre
+per contro il valore <code>0x20000000</code> assegna il colore 2 al pixel
+pi&#xf9; a destra.</p>
+
+<p style="text-align:justify;">In modo analogo a come capitava per i
+<em>background</em> poi, anche per gli sprite esiste una costante che punta
+all'inizio della memoria loro dedicata, indipendentemente dai banchi di memoria
+video assegnati a questa funzione: &#xe8; <code>SPRITE_GFX</code>, per il
+<em>MAIN engine</em>, e <code>SPRITE_GFX_SUB</code> per il <em>SUB engine</em>.
+A questo indirizzo in memoria copiamo le nostre 4 tessere, cos&#xec; che il
+motore grafico le possa utilizzare.</p>
+
+<h4>Gli sprite rotazionali</h4>
+
+<p style="text-align:justify;">Dentro a ogni <em>OAM</em>, oltre alle
+definizioni dei 3 attributi per ognuno dei 128 sprite, c'&#xe8; ancora un po'
+di spazio dedicato alla definizione dei dati di rotazione/dimensionamento, ma
+non abbastanza per poter definire questi dati singolarmente per ogni sprite, e
+cos&#xec; chi ha progettato questo sistema ha deciso di creare 'solo' 32
+definizioni e chiamarle classi, e per ognuna di queste classi sono necessari 4
+registri a 16 bit, che sono di pi&#xf9; di quelli che gi&#xe0; usiamo
+normalmente per ogni singolo sprite. Questi 4 registri sono analoghi ai
+registri PA, PB, PC e PD che abbiamo visto nei <em>background</em> rotazionali,
+e funzionano quasi esattamente allo stesso modo. Con questo sistema quindi non
+potremo ruotare indipendentemente ogni sprite ma dovremo accontentarci di
+accorpare in classi gli sprite che vogliamo far ruotare e/o ridimensionare e
+accettare che tutti gli sprite della stessa classe ruotino e/o si
+ridimensionino nello stesso modo. Non &#xe8; un problema molto limitante, come
+&#xe8; facile intuire.</p>
+
+<p style="text-align:justify;">Nell'esempio che segue definiremo (sul <em>SUB
+engine</em>) uno sprite di 16x16 pixel a 256 colori e lo faremo ruotare su se
+stesso usando il pulsante A, e potremo azzerare il suo angolo con il pulsante
+B. Invece tenendo premuto uno dei due tasti sulla spalla del Nintendo DS
+potremo attivare la modalit&#xe0; rotazionale a dimensioni raddoppiate, per
+vedere la differenza.</p>
+<pre>#include &lt;nds.h&gt;
+
+// un'altra comoda define...
+#define TILE256_1D_128K(n) ((n)&gt;&gt;1)
+
+// questa funzione genera un "falso" coseno, usando un'onda triangolare
+// restituisce +1 .. -1 in virgola fissa 24.8
+int fake_cos (int angle) {
+  int ret=0;
+  angle %= 360;
+  if (angle&lt;0)
+    angle += 360;
+
+  switch (angle) {
+    case 0 ... 180:ret = 256-(512*angle/180);
+                    break;
+    case 181 ... 359:ret = ((angle-180)*512/180) - 256;
+                      break;
+  }
+  return (ret);
+}
+
+// sin(x) = cos(90-x)
+int fake_sin (int angle) {
+  return (fake_cos(90 - angle));
+}
+
+int main(void) {
+
+  // il nostro array di sprite (sull'OAM_SUB)
+  OAMTable* Sprites = (OAMTable*)OAM_SUB;
+
+  // azzeriamo l'OAM (disabilitiamo tutti gli sprite)
+  int i;
+  for (i=0;i&lt;128;i++)
+    Sprites-&gt;oamBuffer[i].attribute[0]=ATTR0_DISABLED | OBJ_Y(192);
+    
+  // impostiamo la memoria video (banco D) per gli sprite
+  vramSetBankD (VRAM_D_SUB_SPRITE);
+  
+  // impostiamo il modo 0 sul SUB engine e attiviamo gli sprite (modo 1D, 128KB RAM)
+  videoSetModeSub (MODE_0_2D|DISPLAY_SPR_ACTIVE|DISPLAY_SPR_1D|DISPLAY_SPR_1D_SIZE_128);
+  
+  // creiamo lo sprite 16x16, 256 colori (64 bytes x 4 tessere)
+  u8 Sprite[64*4] = 
+  {
+    2,2,2,2,2,2,2,2,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    
+    2,2,2,2,2,2,2,2,
+    3,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+
+    2,3,3,3,3,3,3,1,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,3,3,3,3,3,3,3,
+    2,2,2,2,2,2,2,2,
+
+    1,1,3,3,3,3,3,2,
+    1,3,3,3,3,3,3,2,
+    3,3,3,3,3,3,3,2,
+    3,3,3,3,3,3,3,2,
+    3,3,3,3,3,3,3,2,
+    3,3,3,3,3,3,3,2,
+    3,3,3,3,3,3,3,2,
+    2,2,2,2,2,2,2,2
+  };
+  
+  // copiamo le tessere in memoria video (32 bytes ognuna)
+  swiCopy(Sprite, SPRITE_GFX_SUB, 64*4);
+
+  // impostiamo la palette ai colori 1=rosso, 2=grigio, 3=blu,
+  SPRITE_PALETTE_SUB [1] = RGB5(31,0,0);
+  SPRITE_PALETTE_SUB [2] = RGB5(15,15,15);
+  SPRITE_PALETTE_SUB [3] = RGB5(0,0,15);
+  
+  // associamo il SUB engine allo schermo superiore
+  lcdMainOnBottom ();
+  
+  // 'azzera' la classe di rotazione 0
+  Sprites-&gt;matrixBuffer[0].hdx = 1 &lt;&lt; 8;
+  Sprites-&gt;matrixBuffer[0].hdy = 0;
+  Sprites-&gt;matrixBuffer[0].vdx = 0;
+  Sprites-&gt;matrixBuffer[0].vdy = 1 &lt;&lt; 8;
+  
+  // disegna lo sprite 0 al centro dello schermo
+  Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_ROTSCALE|ATTR0_TYPE_NORMAL
+                                    |ATTR0_COLOR_256|ATTR0_SQUARE|OBJ_Y((192-16)/2);
+  Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16|ATTR1_ROTDATA(0)|OBJ_X((256-16)/2);
+  Sprites-&gt;oamBuffer[0].attribute[2]=ATTR2_PRIORITY(0)|(TILE256_1D_128K(0) &amp; 0x03ff);
+
+  int angle=0;
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+  
+    // stiamo premendo A ?
+    if (keysHeld() &amp; KEY_A)
+     
+      // cambiamo angolo
+      angle=(angle+15) % 360;
+
+    
+    // abbiamo premuto B ?
+    if (keysDown() &amp; KEY_B)
+     
+      // azzeriamo l'angolo
+      angle=0;
+
+    // ruota lo sprite 0 modificando la classe 0 a seconda del frame
+    Sprites-&gt;matrixBuffer[0].hdx = fake_cos (angle);
+    Sprites-&gt;matrixBuffer[0].hdy = -fake_sin (angle);
+    Sprites-&gt;matrixBuffer[0].vdx = fake_sin (angle);
+    Sprites-&gt;matrixBuffer[0].vdy = fake_cos (angle);
+
+    // stiamo premendo uno dei tasti sulla spalla del DS?
+    if (keysHeld() &amp; (KEY_L|KEY_R)) {
+     
+      // premuto: attiva la modalit&#xe0; rotazionale 'a dimensione doppia'
+      Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_ROTSCALE_DOUBLE|ATTR0_TYPE_NORMAL
+                                        |ATTR0_COLOR_256|ATTR0_SQUARE|OBJ_Y((192-32)/2);
+      Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16|ATTR1_ROTDATA(0)|OBJ_X((256-32)/2);
+    } else {
+     
+      // non premuto: attiva la modalit&#xe0; rotazionale 'normale'
+      Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_ROTSCALE|ATTR0_TYPE_NORMAL
+                                        |ATTR0_COLOR_256|ATTR0_SQUARE|OBJ_Y((192-16)/2);
+      Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16|ATTR1_ROTDATA(0)|OBJ_X((256-16)/2);
+    }
+
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p style="text-align:justify;">La prima cosa che si nota &#xe8; che
+<em>libnds</em> definisce all'interno del tipo <code>OAMTable</code>, oltre
+all'array di 128 strutture <code>oamBuffer</code>, un secondo array di 32
+strutture <code>matrixBuffer</code> per accedere ad ognuno dei 4 registri di
+ogni singola classe di rotazione. I 4 registri a 16 bit hanno nomi
+<code>hdx</code>, <code>hdy</code>, <code>vdx</code> e <code>vdy</code> ma
+hanno esattamente lo stesso significato e lo stesso uso che hanno i 4 registri
+PA, PB, PC e PD per i <em>background</em>.</p>
+
+<p style="text-align:justify;">Un altro dettaglio notevole &#xe8; che in questo
+caso le tessere che compongono lo sprite sono a 256 colori e, dichiarandole
+come array di byte, questi valori si accodano esattamente nello stesso ordine
+di come poi i pixel verranno disegnati dentro lo sprite.</p>
+
+<p style="text-align:justify;">Infine, molto importante, provando il programma
+sul Nintendo DS o su un emulatore si pu&#xf2; facilmente capire come funziona
+la modalit&#xe0; rotazionale a dimensioni raddoppiate: lo sprite di per s&#xe9;
+non cambia di dimensioni (per ottenere questo effetto possiamo agire sulla
+matrice) ma il suo contenitore, per cos&#xec; dire, diventa pi&#xf9; capiente e
+quindi pur ruotando lo sprite all'interno del suo rettangolo, essendo questo
+raddoppiato non taglieremo via una parte del contenuto. A meno di non ruotare
+degli sprite 8x32, ad esempio: in questo caso ovviamente una delle dimensioni
+dello sprite &#xe8; comunque troppo grande per poter stare all'interno
+dell'altra dimensione raddoppiata.</p>
+
+<h4>I <em>bitmap objects</em></h4>
+
+<p style="text-align:justify;">Oltre agli sfondi a 32768 colori, che abbiamo
+gi&#xe0; visto, il Nintendo DS consente anche di definire sprite a 15 bpp
+pi&#xf9; un bit di alfa per indicare quali pixel dovranno essere disegnati e
+quali no, in modo analogo ai <em>background</em> di tipo <em>bitmap</em>.
+Questi <em>oggetti bitmap</em>, come vengono chiamati, possono essere
+memorizzati nella memoria video in modalit&#xe0; 1D o 2D in modo analogo agli
+sprite, ma non in modo del tutto identico, e quindi sono definite in
+<em>libnds</em> (nel file <code>video.h</code>) le seguenti costanti (per la
+modalit&#xe0; di memorizzazione 1D, come al solito tralasceremo la
+modalit&#xe0; 2D) che dovranno essere utilizzate insieme alla costante
+<code>DISPLAY_SPR_1D_BMP</code> che informer&#xe0; il motore grafico riguardo
+le nostre intenzioni:</p>
+
+<table border="1">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Costante</td>
+      <td>Significato</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_BMP_SIZE_128</code></td>
+      <td>Potremo usare fino a 128 KB per i <em>bitmap objects</em>.<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 128 byte: quindi un
+        nuovo numero ogni tessera a 32768 colori.</td>
+    </tr>
+    <tr>
+      <td><code>DISPLAY_SPR_1D_BMP_SIZE_256</code></td>
+      <td>Potremo usare fino a 256 KB per gli i <em>bitmap objects</em> (solo
+        per il <em>MAIN engine</em>).<br>
+        Sar&#xe0; assegnato un nuovo numero di tessera ogni 256 byte: quindi un
+        nuovo numero ogni 2 tessere a 32768 colori.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">Nell'esempio molto semplice che segue (non
+c'&#xe8; neanche interattivit&#xe0;) disegneremo due bitmap objects
+sovrapposti.</p>
+<pre>#include &lt;nds.h&gt;
+
+int main(void) {
+
+  // il nostro array di sprite (sull'OAM)
+  OAMTable* Sprites = (OAMTable*)OAM;
+
+  // azzeriamo l'OAM (disabilitiamo tutti gli sprite)
+  int i;
+  for (i=0;i&lt;128;i++)
+    Sprites-&gt;oamBuffer[i].attribute[0]=ATTR0_DISABLED | OBJ_Y(192);
+    
+  // impostiamo la memoria video (banco A) per gli sprite
+  vramSetBankA (VRAM_A_MAIN_SPRITE);
+  
+  // impostiamo il modo 0 sul MAIN engine e attiviamo gli sprite (modo BMP 1D, 128KB RAM)
+  videoSetMode (MODE_0_2D|DISPLAY_SPR_ACTIVE
+                |DISPLAY_SPR_1D_BMP|DISPLAY_SPR_1D_BMP_SIZE_128);
+  
+  // creiamo uno sprite 8x8, una X bianca a 32768 colori (128 bytes)
+  u16 SpriteC[8*8] = 
+  {
+    0xffff,0x0101,0x0000,0x0000,0x0000,0x0000,0x0000,0xffff,
+    0x0000,0xffff,0x0000,0x0101,0x0101,0x0000,0xffff,0x0000,
+    0x0000,0x0000,0xffff,0x0000,0x0000,0xffff,0x0000,0x0000,
+    0x0101,0x0101,0x0000,0xffff,0xffff,0x0000,0x0101,0x0101,
+    0x0101,0x0101,0x0000,0xffff,0xffff,0x0000,0x0101,0x0101,
+    0x0000,0x0000,0xffff,0x0000,0x0000,0xffff,0x0000,0x0000,
+    0x0000,0xffff,0x0000,0x0101,0x0101,0x0000,0xffff,0x0000,
+    0xffff,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0xffff
+  };
+  
+  // creiamo uno sprite 16x16, 32768 colori, vuoto (128 byte x 4)
+  u16 SpriteS[8*8*4];
+  
+  // riempiamo le 4 tessere dello sprite 16x16 di sfumature di colore
+  int t,j,k;
+  for (t=0;t&lt;4;t++)
+    for (k=0;k&lt;8;k++)
+      for (j=0;j&lt;8;j++)
+        SpriteS[t*64+k*8+j]=RGB5(k*4,j*4,t*8) | BIT (15);
+
+  // copiamo tutte le tessere in memoria video
+  swiCopy(SpriteC, SPRITE_GFX, 128);
+  swiCopy(SpriteS, SPRITE_GFX + 128, 128*4);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  // disegnamo lo sprite 0 usando la X bianca al centro dello schermo, davanti
+  Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_BMP|ATTR0_SQUARE|OBJ_Y((192-8)/2);
+  Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_8|OBJ_X((256-8)/2);
+  Sprites-&gt;oamBuffer[0].attribute[2]=ATTR2_PRIORITY(0)|(0 &amp; 0x03ff);
+
+  // disegnamo lo sprite 1 usando la sfumatura al centro dello schermo, dietro
+  Sprites-&gt;oamBuffer[1].attribute[0]=ATTR0_BMP|ATTR0_SQUARE|OBJ_Y((192-16)/2);
+  Sprites-&gt;oamBuffer[1].attribute[1]=ATTR1_SIZE_16|OBJ_X((256-16)/2);
+  Sprites-&gt;oamBuffer[1].attribute[2]=ATTR2_PRIORITY(0)|(1 &amp; 0x03ff);  
+  
+  while(1) {
+  
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p style="text-align:justify;">Nell'esempio ho volutamente aggiunto dei pixel
+colorati (ma senza alfa bit) allo sprite della X bianca: non sono stati
+disegnati, come potete notare eseguendo il programma.</p>
+
+<h4>Copia dell'<em>OAM</em> attraverso il <em>DMA</em></h4>
+
+<p style="text-align:justify;">Spesso pu&#xf2; essere conveniente preparare in
+anticipo gli sprite che devono essere visualizzati nel prossimo fotogramma:
+questo per&#xf2; &#xe8; impossibile agendo direttamente sull'<em>OAM</em>
+poich&#xe9; si andrebbero a modificare gli sprite che si stanno disegnando nel
+fotogramma corrente; &#xe8; quindi prassi comune riservare uno spazio in
+memoria esattamente strutturato come l'<em>OAM</em> e riempire questo spazio
+con le propriet&#xe0; che vorremo dare agli sprite al prossimo fotogramma. Al
+momento giusto, poi, si tratter&#xe0; di copiare tutta questa memoria (la sua
+dimensione &#xe8; 1 KB) sull'<em>OAM</em> vero, ottenendo quindi l'effetto
+richiesto.</p>
+
+<p style="text-align:justify;">Nel Nintendo DS c'&#xe8; anche dell'hardware
+dedicato ad effettuare copie di aree di memoria in altre aree di memoria senza
+occupare il processore per un'operazione cos&#xec; banale, e questo hardware si
+chiama <em>DMA</em>, <em>Direct Memory Access</em>. Per esempio potremo usare
+il <em>DMA</em> proprio per aggiornare l'<em>OAM</em> con il contenuto della
+nostra copia in memoria, e infatti &#xe8; prassi piuttosto comune. C'&#xe8;
+per&#xf2; un effetto collaterale che spesso viene dimenticato: dato che il
+processore principale del Nintendo DS &#xe8; dotato di <em>cache</em> (una
+memoria interna al processore che serve, per esempio, a ritardare le operazioni
+di scrittura in memoria al fine di migliorare le performance nell'accesso a
+questa) pu&#xf2; accadere che il <em>DMA</em> si metta a copiare informazioni
+non ancora aggiornate poich&#xe9; ancora in <em>cache</em>. Questo problema
+inoltre non si presenta durante la fase di test sugli emulatori poich&#xe9;
+questi ultimi non emulano il funzionamento della <em>cache</em> e quindi
+facilmente ci si ritrova con un programma funzionante sull'emulatore ma
+malfunzionante quando lo si prova su una consolle vera.</p>
+
+<p style="text-align:justify;">Per ovviare a questo problema c'&#xe8; la
+possibilit&#xe0; di non utilizzare il <em>DMA</em> per effettuare la copia, e
+quindi si copier&#xe0; questa memoria in modo convenzionale, oppure si
+dovr&#xe0; imporre alla <em>cache</em> dei dati (intera o solo una parte di
+essa) di effettuare le scritture ancora sospese: un'operazione chiamata
+<em>flush</em>, scarico.</p>
+
+<p style="text-align:justify;">Nell'esempio che segue utilizzeremo tutti i 128
+sprite del <em>MAIN engine</em> per disegnare delle stelline a caso sullo
+schermo. Alla pressione del tasto A riposizioneremo tutte le stelline
+utilizzando una copia dell'<em>OAM</em>, il <em>flush</em> della <em>cache</em>
+dei dati, e copiando gli sprite sull'<em>OAM</em> utilizzando un
+<em>DMA</em>.</p>
+<pre>#include &lt;nds.h&gt;
+
+// una comoda define...
+#define TILE16_1D_128K(n) ((n)&gt;&gt;2)
+
+// definiamo il nostro array di sprite (una copia)
+OAMTable Sprites;
+
+void RandomizeSprites (void) {
+
+  int i;
+  
+  // ognuno dei 128 sprite
+  for (i=0;i&lt;128;i++) {
+  
+    // normale, 16 colori, quadrato
+    Sprites.oamBuffer[i].attribute[0]=ATTR0_NORMAL | ATTR0_TYPE_NORMAL | ATTR0_COLOR_16 |
+                                      ATTR0_SQUARE | OBJ_Y(rand()%(192-8));
+    // 8x8 pixel di dimensione
+    Sprites.oamBuffer[i].attribute[1]=ATTR1_SIZE_8 | OBJ_X(rand()%(256-8));
+    
+    // tessera 0, quella con la stellina
+    Sprites.oamBuffer[i].attribute[2]=ATTR2_PRIORITY(0) | (TILE16_1D_128K(0) &amp; 0x03ff);
+  }
+}
+
+int main(void) {
+
+  // azzeriamo l'OAM (disabilitiamo tutti gli sprite)
+  int i;
+  for (i=0;i&lt;128;i++)
+    Sprites.oamBuffer[i].attribute[0]=ATTR0_DISABLED | OBJ_Y(192);
+    
+  // impostiamo la memoria video (banco A) per gli sprite
+  vramSetBankA (VRAM_A_MAIN_SPRITE);
+  
+  // impostiamo il modo 0 sul MAIN engine e attiviamo gli sprite (modo 1D, 128KB RAM)
+  videoSetMode (MODE_0_2D|DISPLAY_SPR_ACTIVE|DISPLAY_SPR_1D|DISPLAY_SPR_1D_SIZE_128);
+  
+  // creiamo lo sprite 8x8, 16 colori
+  u32 Sprite[8] = 
+  {
+    0x00010000,
+    0x00010000,
+    0x00010000,
+    0x11111110,
+    0x00101000,
+    0x01000100,
+    0x10000010,
+    0x00000000
+  };
+  
+  // copiamo le tessere in memoria video (32 byte)
+  swiCopy(Sprite, SPRITE_GFX, 32);
+  
+  // impostiamo la palette ai colori 0=nero, 1=bianco
+  SPRITE_PALETTE [0] = RGB5(0,0,0);
+  SPRITE_PALETTE [1] = RGB5(31,31,31);
+  
+  // associamo il MAIN engine allo schermo superiore
+  lcdMainOnTop ();
+  
+  // posiziona gli sprite a caso
+  RandomizeSprites();
+  
+  // setto il flag per indicare che l'OAM &#xe8; da aggiornare
+  int OAMRefresh=1;
+  
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // abbiamo premuto A?
+    if (keysDown() &amp; KEY_A) {
+     
+      // posiziona gli sprite a caso
+      RandomizeSprites();
+      
+      // setto il flag per indicare che l'OAM &#xe8; da aggiornare
+      OAMRefresh=1;
+    }
+  
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+    
+    // la nostra copia dell'OAM &#xe8; cambiata?
+    if (OAMRefresh) {
+     
+      // flush della cache dei dati
+      DC_FlushAll();
+      
+      // copia dell'OAM via DMA
+      dmaCopy (&amp;Sprites, OAM, sizeof(Sprites));
+      
+      // resetto il flag per indicare che l'OAM &#xe8; aggiornato
+      OAMRefresh=0;
+    }
+  }
+}</pre>
+
+<h4><span style="text-align:justify;">Effetto Mosaico</span></h4>
+
+<p style="text-align:justify;">L'ultima propriet&#xe0; di cui tratto in questa
+sezione &#xe8; il flag per attivare l'effetto mosaico, contenuto nell'attributo
+0 di ogni sprite. Personalmente trovo discutibile l'utilit&#xe0; di questo
+effetto, per&#xf2; pi&#xf9; di una volta mi &#xe8; capitato di vederlo usare
+negli <em>homebrew</em> e quindi a qualcuno magari pu&#xf2; interessare. Il
+mosaico &#xe8; definito come il disegnare un certo numero di volte in
+orizzontale o verticale lo stesso pixel, invece dei pixel che dovrebbero essere
+veramente disegnati. Ad esempio un mosaico di dimensione 2x2 indica che il
+primo pixel dello sprite sar&#xe0; ripetuto per due volte in orizzontale ed
+ugualmente nella riga inferiore, quindi nascondendo il colore originale del
+pixel immediatamente a destra, quello sotto, e quello a destra di quello sotto.
+Che sarebbe a dire come scendere di risoluzione senza diminuire la dimensione
+dello sprite, esattamente quello che si chiama mosaico, appunto, perch&#xe9;
+composto di rettangolini. Il flag nell'attributo 0 indica quindi se l'effetto
+deve essere applicato allo specifico sprite, ma per impostare quanti pixel
+&#xe8; grande ogni tessera del mosaico bisogna utilizzare il registro apposito,
+definito in <em>libnds</em> (in <code>video.h</code>) come
+<code>MOSAIC_CR</code> per il <em>MAIN engine</em> e <code>SUB_MOSAIC_CR</code>
+per il <em>SUB engine</em>. E' un registro a 16 bit ed &#xe8; diviso in 4
+sezioni da 4 bit ognuna. Andando per ordine, i 4 bit meno significativi sono la
+dimensione orizzontale della tessera per l'effetto mosaico dei
+<em>background</em> (s&#xec;, anche i <em>background</em> possono avere questo
+effetto, agendo sui registri di controllo dei <em>background</em> attraverso la
+costante <code>BG_MOSAIC_ON</code> definita in <code>background.h</code>), poi
+la dimensione verticale, poi analogamente, nel byte pi&#xf9; significativo, 4
+bit per la dimensione orizzontale della tessera per l'effetto mosaico degli
+sprite e infine i 4 bit per la dimensione verticale. Ovviamente il valore 0 non
+avrebbe senso e quindi in realt&#xe0; ogni valore andr&#xe0; indicato abbassato
+di una unit&#xe0;, cio&#xe8; per impostare una modalit&#xe0; mosaico di 8x6
+pixel per gli sprite bisogner&#xe0; associare al registro il valore
+<code>0x5700</code>. Ovviamente il valore impostato qui sar&#xe0; utilizzato
+indistintamente per tutti gli sprite con il flag di mosaico attivo.</p>
+<hr>
+
+<p>Sverx, 19 Giugno 2009. Ultima modifica il 26 Giugno 2009. </p>
+<hr>
+
+<p>Domande? Dubbi? Suggerimenti? Vuoi scambiare due parole con me? Ho preparato
+un <a href="http://libxm7.s2.bizhat.com/index.php?c=3&amp;mforum=libxm7">forum
+apposta</a>!</p>
+
+<p>Torna all'<a href="index.html">indice</a> per accedere alle altre
+sezioni.</p>
+
+<p><sup>riferimenti:</sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdobjoamattributes">http://nocash.emubase.de/gbatek.htm#lcdobjoamattributes</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsvideoobjs">http://nocash.emubase.de/gbatek.htm#dsvideoobjs</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdobjoamrotationscalingparameters">http://nocash.emubase.de/gbatek.htm#lcdobjoamrotationscalingparameters</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsdmatransfers">http://nocash.emubase.de/gbatek.htm#dsdmatransfers</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdiomosaicfunction">http://nocash.emubase.de/gbatek.htm#lcdiomosaicfunction</a></sup></p>
+</body>
+</html>

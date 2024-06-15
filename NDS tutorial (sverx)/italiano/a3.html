@@ -1,0 +1,816 @@
+<html>
+<head>
+  <title>Programmare il Nintendo DS - Tutorial sulla grafica 2D - parte
+  III</title>
+  <meta name="keywords" content="palette estese, effetto mosaico">
+  <style type="text/css" title="Amaya theme">
+/* Modern style for Amaya Editor Lite */
+
+/* default rules for the whole document */
+body {
+    font-size: 12pt;
+    font-family: Verdana;
+    font-weight: normal;
+    font-style: normal;
+    color: black;
+    background-color: white;
+    line-height: 1.2em;
+    margin-left: 4em;
+    margin-right: 2em;
+   }
+
+/* paragraphs */
+p  {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+
+pre {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+
+/* headings */
+h1 {
+    font-size: 180%;
+    font-weight: bold;
+    font-style: normal;
+    font-variant: small-caps;
+    text-align: left;
+    padding: 0;
+    margin-top: 1.7em;
+    margin-bottom: 1.7em;
+   }
+h2 {
+    font-size: 150%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.5em;
+    margin-bottom: 1.1em;
+   }
+h3 {
+    font-size: 130%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.3em;
+    margin-bottom: 1.1em;
+   }
+h4 {
+    font-size: 110%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.1em;
+    margin-bottom: 1.1em;
+   }
+h5 {
+    font-size: 100%;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+
+/* divisions */
+div {
+    padding: 0;
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+
+/* lists */
+ul, ol {
+    padding: 0 0 0 3em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+ul ul, ol ol, ul ol, ol ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+li {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+li p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+dl {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+   }
+dl dl {
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+dt {
+    padding: 0;
+    font-weight: bold;
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+dd {
+    padding: 0;
+    margin-top: .3em;
+    margin-left: 3em;
+    margin-bottom: .3em;
+   }
+dl p {
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+
+/* inline */
+strong {
+    font-weight: bold;
+   }
+em {
+    font-style: italic;
+   }
+code {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+ins {
+    background-color: yellow;
+    text-decoration: underline;
+   }
+del {
+    text-decoration: line-through;
+   }
+
+/* anchors */
+a[href] {
+    color: blue;
+    text-decoration: underline;
+   }
+
+/* end */
+  </style>
+</head>
+
+<body>
+<h2>La grafica 2D del Nintendo DS</h2>
+<hr>
+
+<h4>Le palette estese (<em>background</em>)</h4>
+
+<p style="text-align:justify;">Nelle sezioni precedenti abbiamo gi&#xe0;
+accennato alla possibilit&#xe0; di utilizzare un maggior numero di palette (e
+quindi di colori) sia per i <em>background</em> che per gli sprite. Vediamo in
+dettaglio quali sono le possibilit&#xe0; che da il Nintendo DS: le
+funzionalit&#xe0; di cui tratteremo sono disponibili senza distinzioni sia sul
+<em>MAIN engine</em> che sul <em>SUB engine</em>.</p>
+
+<p style="text-align:justify;">Per quanto riguarda i <em>background</em>, vi
+&#xe8; la possibilit&#xe0; di usare contemporaneamente fino a 16 palette
+distinte, di 256 colori ognuna, per ognuno dei 4 <em>background</em>, portando
+quindi il numero di colori contemporanei visualizzabili a 4096 per ogni
+<em>background</em>, 16384 distinti colori in totale, in teoria. Per&#xf2; le
+palette estese possono essere utilizzate solo nei modi <strong>testo</strong> e
+<strong>esteso</strong>, ovvero solo in quei modi dove &#xe8; possibile
+specificare sia una tessera (e quindi in tutti i modi <em>a tessere</em> in
+genere, e non nei modi <em>bitmap</em>) che una palette (e questo taglia fuori
+i <em>background</em> in modo <strong>rotazionale</strong> poich&#xe9; questo
+specifica, nella mappa delle tessere, esclusivamente il numero di tessera da
+visualizzare e niente di pi&#xf9;).</p>
+
+<p style="text-align:justify;">Attivando le palette estese quindi sar&#xe0;
+possibile specificare, attraverso la mappa del <em>background</em>, quale
+palette va utilizzata insieme ad ogni determinata tessera. Appunto a questo
+fine viene definita in <em>libnds</em> (in <code>background.h</code>) la
+seguente macro:</p>
+
+<p><code>TILE_PALETTE(n)</code></p>
+
+<p style="text-align:justify;">che viene usata in modo analogo ai flag di
+<em>mirror</em> e <em>flip</em>, serve cio&#xe8; a calcolare quale valore a 16
+bit inserire nella mappa del <em>background</em> per ogni tessera.</p>
+
+<p style="text-align:justify;">In <em>libnds</em> (in <code>video.h</code>)
+&#xe8; poi definita la seguente costante da utilizzare nelle funzioni
+<code>videoSetMode()</code> o <code>videoSetModeSub()</code> per attivare le
+palette estese per i <em>background</em> rispettivamente sul <em>MAIN
+engine</em> o sul <em>SUB engine</em>:</p>
+
+<p><code>DISPLAY_BG_EXT_PALETTE</code></p>
+
+<p style="text-align:justify;">Queste palette estese richiedono 512 byte
+ognuna, quindi l'intero set di 16 palette per ognuno dei 4 <em>background</em>
+richiede un totale di 32 KB, ma la consolle non &#xe8; equipaggiata di una
+memoria di tali dimensioni dedicata a questo esclusivo fine: per poter attivare
+questa caratteristica si deve quindi utilizzare un banco di memoria video
+appositamente configurato, o eventualmente due. Per questa funzionalit&#xe0;
+sono disponibili solamente i banchi E (da 64 KB, di cui solo i primi 32 KB
+verranno usati), F e G (da 16 KB ognuno) per le palette estese del <em>MAIN
+engine</em>, ed esclusivamente il banco H (da 32 KB) per le palette estese del
+<em>SUB engine.</em></p>
+
+<p style="text-align:justify;"><em></em>Un'altra cosa che in realt&#xe0;
+pu&#xf2; risultare fastidiosa &#xe8; che attivare le palette estese vuol dire
+attivarle per tutti i <em>background</em>, non solo per quelli nei quali
+desideriamo utilizzarle. Quindi se volessimo avere una palette unica in uno
+specifico <em>background</em> <strong>testo</strong> o <strong>esteso</strong>
+a 256 colori, allora saremo comunque costretti a caricare questa palette nella
+memoria delle palette estese di quel <em>background</em>. </p>
+
+<p style="text-align:justify;">Quindi attivando le palette estese verr&#xe0;
+ignorata la palette standard dei <em>background</em>, con le seguenti tre
+eccezioni:<br>
+- l'elemento 0 della palette standard dei <em>background</em> sar&#xe0;
+comunque il colore che verr&#xe0; dato ai pixel che risulteranno trasparenti in
+tutti i <em>background</em>, in pratica come se avessimo un ultimo fondale
+(detto anche <em>backdrop</em>), tutto di questo colore, dietro ai 4
+<em>background.<br>
+</em>- nel modo <strong>rotazionale</strong> a 256 colori viene usata sempre e
+solo la palette standard dei <em>background</em>, anche quando le palette
+estese sono attive.<br>
+- nel modo <strong>testo</strong> a 16 colori per tessera saranno i 256 colori
+definiti nella palette standard dei <em>background</em> ad essere utilizzati
+come 16 distinte palette da 16 colori ognuna. (E se questo fosse l'unico modo
+con palette estese che intendete utilizzare allora potrete evitare di dedicare
+dei banchi di memoria video aggiuntivi)</p>
+
+<p style="text-align:justify;">Infine &#xe8; da rimarcare che quando i banchi
+di memoria video sono impostati nelle varie modalit&#xe0; di palette estese,
+essi non hanno indirizzi di memoria ai quali &#xe8; possibile fare riferimento
+per accedere e impostare i colori nelle palette, indirizzi che invece hanno
+quando tali banchi sono impostati nelle altre modalit&#xe0;. Per poter quindi
+impostare le palette &#xe8; necessario cambiare temporaneamente modalit&#xe0; a
+tali banchi (conviene selezionare la modalit&#xe0; LCD nella quale ogni banco
+ha un suo univoco indirizzo), scrivere ai loro indirizzi ora accessibili le
+informazioni riguardo i colori delle palette, ed infine nuovamente impostare la
+modalit&#xe0; palette estese per i banchi in oggetto.</p>
+
+<p>In <em>libnds</em> (in <code>video.h</code>) sono definite le seguenti
+costanti per l'accesso ai banchi di memoria video al fine di scrivere le
+palette dei <em>background</em>:</p>
+
+<p><code>VRAM_E_EXT_PALETTE</code><br>
+<code>VRAM_F_EXT_PALETTE</code><br>
+<code>VRAM_G_EXT_PALETTE</code><br>
+<code>VRAM_H_EXT_PALETTE</code></p>
+
+<p style="text-align:justify;">Ognuna di queste costanti &#xe8; un puntatore a
+vettore dove ogni elemento &#xe8; una palette, dopo le 16 palette del
+<em>background</em> 0 ci sono le 16 del <em>background</em> 1 e cos&#xec; via.
+Ogni palette &#xe8; un vettore di 256 <em>halfword</em> che rappresentano un
+colore espresso su 15 bit. Il 16&#xb0; bit di ogni <em>halfword</em>, il
+pi&#xf9; significativo, viene ignorato.</p>
+
+<p style="text-align:justify;"><span style="text-align:justify;">Una
+ultimissima nota: &#xe8; possibile forzare il <em>background</em> 0 ad usare le
+stesse palette estese del <em>background</em> 2 e/o forzare il
+<em>background</em> 1 ad usare le stesse palette estese del <em>background</em>
+3. Attivando entrambe le forzature sar&#xe0; quindi possibile utilizzare solo 2
+set di 16 palette estese invece di 4 set, richiedendo 16 KB invece di 32 KB.
+Pu&#xf2; essere il modo di risparmiare uno dei due banchi di memoria video, F o
+G, magari per dedicarlo alle palette estese degli sprite.</span></p>
+
+<p>In <em>libnds</em> (in <code>background.h</code>) sono definite
+appositamente le due costanti</p>
+
+<p><code>BG_PALETTE_SLOT0</code><br>
+<code>BG_PALETTE_SLOT2</code></p>
+
+<p style="text-align:justify;">che possono essere usate per selezionare quali
+palette estese user&#xe0; il <em>background</em> 0, e le due costanti</p>
+
+<p><code>BG_PALETTE_SLOT1</code><br>
+<code>BG_PALETTE_SLOT3</code></p>
+
+<p>che possono essere usate per selezionare le palette estese che dovr&#xe0;
+utilizzare il <em>background</em> 1.</p>
+
+<h4>Le palette estese (sprite)</h4>
+
+<p style="text-align:justify;">Le palette estese per gli sprite sono molto
+simili a quelle dei <em>background</em> e si possono attivare o meno
+indipendentemente dal fatto che siano attive o no per i <em>background</em>.
+Per gli sprite esiste per&#xf2; un solo set di 16 palette estese a 256 colori
+ognuna e quindi la memoria totale richiesta &#xe8; di 8 KB. Anche in questo
+caso non essendo presente nella consolle una memoria dedicata a questa funzione
+sar&#xe0; necessario utilizzare un banco di memoria video: si pu&#xf2;
+scegliere tra il banco F o G (da 16 KB ognuno, verranno comunque utilizzati
+solo i primi 8 KB) per il <em>MAIN engine</em> e si pu&#xf2; solo utilizzare il
+banco I (anche questo da 16 KB) per il <em>SUB engine</em>. Per le palette
+estese degli sprite a 16 colori invece si useranno i 256 colori della palette
+standard degli sprite, analogamente a quanto avviene per i <em>background</em>
+nei modi a tessere a 16 colori. Se le palette estese sono attive per gli sprite
+allora tutti gli sprite attivi dovranno fare riferimento ad una di esse
+attraverso la propriet&#xe0; <code>ATTR2_PALETTE(n)</code> nell'attributo 2
+dell'<em>OAM</em>. Ovvero non si potr&#xe0; avere contemporaneamente attive le
+palette estese degli sprite e sprite che usino la palette standard.</p>
+
+<p style="text-align:justify;">In <em>libnds</em> (sempre in
+<code>video.h</code>) &#xe8; definita la seguente costante da utilizzare nelle
+funzioni <code>videoSetMode()</code> e <code>videoSetModeSub()</code> per
+attivare le palette estese per gli sprite:</p>
+
+<p><code>DISPLAY_SPR_EXT_PALETTE</code></p>
+
+<p style="text-align:justify;">Sono inoltre definite le seguenti costanti per
+l'accesso ai banchi di memoria video al fine di scrivere le palette degli
+sprite:</p>
+
+<p><code>VRAM_F_EXT_SPR_PALETTE<br>
+VRAM_G_EXT_SPR_PALETTE<br>
+VRAM_I_EXT_SPR_PALETTE</code></p>
+
+<p style="text-align:justify;">Nell'esempio che segue useremo le palette estese
+dei <em>background</em> e degli sprite sul <em>MAIN engine</em> per
+visualizzare il medesimo sprite a 256 colori usando tutte e 16 le palette
+estese degli sprite su un <em>background</em> fatto sempre della stessa tessera
+a 256 colori ma ripetuta alternando due palette diverse. Useremo il
+<em>background</em> 0 e solo 2 set di 16 palette e quindi un solo banco da 16
+KB, il banco G. Il <em>background</em> 0 quindi user&#xe0; le palette del
+<em>background</em> 2. Toccando il <em>touchscreen</em> gli sprite si
+riposizioneranno e cambieranno colore casualmente, usando una palette
+diversa.</p>
+<pre>#include &lt;nds.h&gt;
+
+// una comoda define per gli sprite
+#define TILE16_1D_128K(n) ((n)&gt;&gt;2)
+
+// definiamo il nostro array di sprite (una copia)
+OAMTable Sprites;
+
+void RandomizeSprites (void) {
+
+  int i;
+  
+  // ognuno dei 128 sprite
+  for (i=0;i&lt;128;i++) {
+  
+    // normale, 16 colori, quadrato
+    Sprites.oamBuffer[i].attribute[0]=ATTR0_NORMAL | ATTR0_TYPE_NORMAL | ATTR0_COLOR_256
+                                     |ATTR0_SQUARE | OBJ_Y(rand()%(192-8));
+    // 8x8 pixel di dimensione
+    Sprites.oamBuffer[i].attribute[1]=ATTR1_SIZE_8 | OBJ_X(rand()%(256-8));
+    
+    // tessera 0, palette a caso
+    Sprites.oamBuffer[i].attribute[2]=ATTR2_PRIORITY(0) | ATTR2_PALETTE (rand()%16)
+                                     |(TILE16_1D_128K(0) &amp; 0x03ff);
+  }
+}
+
+int main(void) {
+
+  // impostiamo la memoria video per il background (banco A)
+  vramSetBankA (VRAM_A_MAIN_BG);
+  
+  // impostiamo la memoria video per gli sprite (banco E)
+  vramSetBankE (VRAM_E_MAIN_SPRITE);
+  
+  // impostiamo accessibile la memoria video dove memorizzeremo
+  // le palette estese del background (banco G)
+  vramSetBankG (VRAM_G_LCD);
+  
+  // carichiamo dei colori nella palette estesa numero 1 dello slot 0
+  // 1=blu, 2=rosso
+  VRAM_G_EXT_PALETTE[0][1][1] = RGB5 (0,0,15);
+  VRAM_G_EXT_PALETTE[0][1][2] = RGB5 (15,0,0);
+  
+  // carichiamo dei colori nella palette estesa numero 3 dello slot 0
+  // 1=verde, 2=grigio
+  VRAM_G_EXT_PALETTE[0][3][1] = RGB5 (0,15,0);
+  VRAM_G_EXT_PALETTE[0][3][2] = RGB5 (8,8,8);
+
+  // impostiamo la memoria video per le palette estese del background (banco G)
+  vramSetBankG (VRAM_G_BG_EXT_PALETTE_SLOT23);
+  
+  // impostiamo accessibile la memoria video dove memorizzeremo
+  // le palette estese degli sprite (banco F)
+  vramSetBankF (VRAM_F_LCD);
+  
+  // carichiamo dei colori diversi nell'elemento 1 di ogni palette estesa degli sprite
+  int i;
+  for (i=0;i&lt;16;i++)
+    VRAM_F_EXT_SPR_PALETTE[i][1] = RGB5 ((i&gt;&gt;3)*31,((i &amp; 0x06)&gt;&gt;1)*15+1,(i&amp;0x01)*31);
+
+  // impostiamo la memoria video per le palette estese degli sprite (banco F)
+  vramSetBankF (VRAM_F_SPRITE_EXT_PALETTE);
+
+  // impostiamo il modo 0 sul MAIN engine, il BG 0, attiviamo gli sprite e
+  // le palette estese dei background e degli sprite
+  videoSetMode ( MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_SPR_ACTIVE
+               | DISPLAY_SPR_1D | DISPLAY_SPR_1D_SIZE_128
+               | DISPLAY_BG_EXT_PALETTE | DISPLAY_SPR_EXT_PALETTE );
+  
+  // creiamo una tessera colorata con i colori 1 e 2 (64 bytes)
+  u8 TesseraColorata[8*8] = 
+  {
+    0,0,0,0,0,0,0,0,
+    0,1,1,1,1,1,1,0,
+    0,1,1,2,2,1,1,0,
+    0,1,2,1,2,2,1,0,
+    0,1,2,2,1,2,1,0,
+    0,1,1,2,2,1,1,0,
+    0,1,1,1,1,1,1,0,
+    0,0,0,0,0,0,0,0
+  };
+  
+  // creiamo uno sprite 8x8, 256 colori
+  u8 Sprite[8*8] = 
+  {
+    0,0,1,1,1,1,0,0,
+    0,1,1,1,1,1,1,0,
+    1,1,1,1,1,1,1,1,
+    1,1,1,0,0,1,1,1,
+    1,1,1,0,0,1,1,1,
+    1,1,1,1,1,1,1,1,
+    0,1,1,1,1,1,1,0,
+    0,0,1,1,1,1,0,0
+  };
+  
+  // copiamo la tessera del background in memoria video
+  swiCopy(TesseraColorata, (u8*)BG_TILE_RAM(1), 64);
+  
+  // copiamo la tessera dello sprite in memoria video
+  swiCopy(Sprite, SPRITE_GFX, 64);
+
+  // impostiamo il colore 0 della palette standard al nero
+  BG_PALETTE [0] = RGB5(0,0,0);
+  
+  // riempiamo la mappa usando sempre la stessa tessera colorata,
+  // alternando per&#xf2; le palette estese
+  for (i=0;i&lt;32*32;i++)
+    ((u16*)BG_MAP_RAM(0)) [i] = 0 | TILE_PALETTE (((i&amp;0x1)^((i&amp;0x20)&gt;&gt;5))?1:3);
+    
+  // impostiamo il modo del BG 0, usando le palette del BG 2
+  REG_BG0CNT = BG_32x32|BG_COLOR_256|BG_PALETTE_SLOT2|BG_MAP_BASE(0)|BG_TILE_BASE(1);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  // posiziona gli sprite a caso
+  RandomizeSprites();
+  
+  // setto il flag per indicare che l'OAM &#xe8; da aggiornare
+  int OAMRefresh=1;
+
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // abbiamo appena toccato il touch screen?
+    if (keysDown() &amp; KEY_TOUCH) {
+     
+      // posiziona gli sprite a caso
+      RandomizeSprites();
+      
+      // setto il flag per indicare che l'OAM &#xe8; da aggiornare
+      OAMRefresh=1;
+    }
+ 
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+    
+    // la nostra copia dell'OAM &#xe8; cambiata?
+    if (OAMRefresh) {
+     
+      // flush della cache dei dati
+      DC_FlushAll();
+      
+      // copia dell'OAM via DMA
+      dmaCopy (&amp;Sprites, OAM, sizeof(Sprites));
+      
+      // resetto il flag per indicare che l'OAM &#xe8; aggiornato
+      OAMRefresh=0;
+    }
+  }
+}</pre>
+
+<p style="text-align:justify;">E' necessario chiarire l'utilizzo della costante
+<code>VRAM_G_BG_EXT_PALETTE_SLOT23</code> nella funzione
+<code>vramSetBankG()</code>. Come ho gi&#xe0; scritto, nella tabella delle
+modalit&#xe0; di funzionamento delle memorie video che &#xe8; stata riportata
+non sono state inserite tutte le modalit&#xe0; possibili, ed infatti questa
+modalit&#xe0;, e tante altre, mancano. La maggior parte delle modalit&#xe0; di
+cui non abbiamo parlato servono a definire a quale indirizzo fisico verranno
+associati i banchi di memoria, questo perch&#xe9; ad esempio se volessimo
+utilizzare 256 KB di memoria video per gli sprite dovremmo impostare due banchi
+da 128 KB alla modalit&#xe0; <code>VRAM_x_MAIN_SPRITE</code> ma dovremo
+specificare quale banco sar&#xe0; utilizzato per contenere la prima met&#xe0;
+della memoria degli sprite e quale banco la seconda met&#xe0;,
+evidentemente.</p>
+
+<p style="text-align:justify;">In questo caso per&#xf2; la modalit&#xe0; non
+serve al nostro programma per sapere dove scrivere le informazioni della
+palette in memoria (infatti facilmente accediamo alla memoria del banco G
+attraverso il vettore <code>VRAM_G_EXT_PALETTE</code> quando &#xe8; in
+modalit&#xe0; LCD mentre lo stesso banco &#xe8; poi inaccessibile quando &#xe8;
+in modalit&#xe0; palette estese) quanto al motore grafico per capire se in quel
+banco di memoria dedicato alle palette estese dei <em>background</em> abbiamo
+memorizzato le palette dei <em>background</em> 0 e 1 oppure quelle dei
+<em>background</em> 2 e 3. E nel nostro programma abbiamo voluto utilizzare
+solamente le palette dei <em>background</em> 2 e 3, per risparmiare memoria, ed
+infatti abbiamo forzato il nostro <em>background</em> 0 ad utilizzare le
+palette del <em>background</em> 2, attraverso l'apposito flag.</p>
+
+<p style="text-align:justify;">Ne consegue che in <em>libnds</em> sono anche
+definite le seguenti 4 modalit&#xe0;, oltre a quelle gi&#xe0; viste.</p>
+
+<table border="1">
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Memoria (dimensione)</td>
+      <td>Modalit&#xe0; utilizzabili</td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_F (16 KB)</td>
+      <td><code>VRAM_F_BG_EXT_PALETTE_SLOT01</code><br>
+        <code>VRAM_F_BG_EXT_PALETTE_SLOT23</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_G (16 KB)</td>
+      <td><code>VRAM_G_BG_EXT_PALETTE_SLOT01</code><br>
+        <code>VRAM_G_BG_EXT_PALETTE_SLOT23</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>L'effetto speciale <em>Alpha Blending</em></h4>
+
+<p style="text-align:justify;">I motori grafici del Nintendo DS, come abbiamo
+visto, sono in grado di visualizzare immagini utilizzando fino a 4
+<em>background</em> di vario tipo e a 16, 256 o 32768 colori e fino a 128
+sprite anche questi a 16, 256 o 32768 colori. Quello per&#xf2; che non &#xe8;
+ancora stato detto &#xe8; che questi motori grafici sono anche in grado di
+'mescolare' i colori dei <em>background</em> e degli sprite per ottenere fino a
+262144 colori diversi (18 bpp, gli schermi della consolle sono in grado di
+visualizzarli) e interessanti effetti. Si chiama <em>Alpha Blending</em> e
+permette di specificare che determinati <em>background</em> (e/o determinati
+sprite) possano mescolare il colore dei loro pixel quando si trovano
+sovrapposti ad altri determinati <em>background</em> o sprite.</p>
+
+<p>L'effetto <em>Alpha Blending</em> si attiva attraverso un registro apposito,
+uno per ogni motore grafico, accessibili attraverso le seguenti costanti
+definite in <em>libnds</em> (in <code>video.h</code>):</p>
+
+<p><code>REG_BLDCNT<br>
+REG_BLDCNT_SUB</code></p>
+
+<p style="text-align:justify;">Attraverso il registro si specificher&#xe0;
+quali <em>background</em> saranno interessati dall'effetto, e se sar&#xe0;
+attivo anche per gli sprite, e se questo effetto dovr&#xe0; anche essere
+applicato a quei pixel che non risulteranno coprire niente altro, che quindi
+non avrebbero niente con cui mescolare il proprio colore.</p>
+
+<p style="text-align:justify;">Si definiscono quindi due gruppi (il gruppo
+<em>sorgente</em> e il gruppo <em>destinazione</em>) composti ognuno dagli
+elementi che desideriamo interessare tra i <em>background</em>, gli sprite
+-visti per&#xf2; come un unico elemento- e il fondale (il <em>backdrop</em>: il
+niente che sta dietro ai <em>background</em> e gli sprite). L'effetto di
+<em>Alpha Blending</em> avverr&#xe0; tra ogni pixel dell'elemento di maggior
+priorit&#xe0; del gruppo sorgente e il pixel dell'elemento sottostante
+(cio&#xe8; di priorit&#xe0; minore rispetto al precedente elemento) di maggior
+priorit&#xe0; nel gruppo destinazione, fatto salvo l'elemento sorgente
+stesso.</p>
+
+<p style="text-align:justify;">Questo comporta per esempio che -purtroppo- non
+sar&#xe0; possibile avere l'<em>Alpha Blending</em> tra due sprite, essendo
+entrambi in realt&#xe0; lo stesso elemento. <em>Blend</em> tra sprite e
+<em>background</em> e tra un <em>background</em> e un altro, invece, sono
+perfettamente regolari.</p>
+
+<p style="text-align:justify;">Vengono definite in <em>libnds</em> (sempre in
+<code>video.h</code>) le seguenti costanti per indicare i sei elementi per ogni
+gruppo (chiamati impropriamente il gruppo <em>sorgente</em> e il gruppo
+<em>destinazione</em>):</p>
+
+<p><code>BLEND_SRC_BG0<br>
+BLEND_SRC_BG1<br>
+BLEND_SRC_BG2<br>
+BLEND_SRC_BG3<br>
+BLEND_SRC_SPRITE<br>
+BLEND_SRC_BACKDROP</code></p>
+
+<p><code>BLEND_DST_BG0<br>
+BLEND_DST_BG1<br>
+BLEND_DST_BG2<br>
+BLEND_DST_BG3<br>
+BLEND_DST_SPRITE<br>
+BLEND_DST_BACKDROP</code></p>
+
+<p style="text-align:justify;">ed infine le costanti per attivare o disattivare
+l'effetto <em>Alpha Blending</em>:</p>
+
+<p><code>BLEND_ALPHA<br>
+BLEND_NONE</code></p>
+
+<p style="text-align:justify;">E' poi presente un altro registro (a sola
+scrittura, uno per ogni motore grafico) attraverso il quale si
+specificher&#xe0; in quale quantit&#xe0; il primo e il secondo elemento
+concorreranno a formare il risultato di questa 'somma': entrambi i valori sono
+frazionari e specificano quanti sedicesimi di ogni intensit&#xe0; delle tre
+componenti del colore (RGB) considerare. La somma tra i sedicesimi del primo e
+quelli del secondo gruppo non deve obbligatoriamente dare 16, anzi vi sono
+interessanti effetti ottenibili anche attraverso il superamento di questa
+soglia. Le costanti definite in <em>libnds</em> per questo registro sono:</p>
+
+<p><code>REG_BLDALPHA<br>
+REG_BLDALPHA_SUB</code></p>
+
+<p style="text-align:justify;">Il byte meno significativo del registro deve
+contenere il coefficiente di intensit&#xe0; specificato per gli elementi del
+gruppo sorgente mentre il byte pi&#xf9; significativo deve contenere il
+coefficiente di intensit&#xe0; specificato per gli elementi del gruppo
+destinazione. Un valore superiore a 16 verr&#xe0; interpretato come un 16 a
+tutti gli effetti. Oltre a questo, il byte meno significativo specifica anche
+il canale alfa (la semitrasparenza, valori tra 0 e 16 sedicesimi) di tutti gli
+sprite dichiarati come semitrasparenti, sia attivo o meno l'effetto speciale di
+<em>Alpha Blending</em>.</p>
+
+<p style="text-align:justify;">Nel semplice esempio che segue utilizzeremo
+l'effetto di <em>Alpha Blending</em> tra uno sprite, che pu&#xf2; essere
+spostato attraverso il <em>touchscreen</em>, e un semplice
+<em>background</em>.</p>
+<pre>#include &lt;nds.h&gt;
+
+// una comoda define per gli sprite
+#define TILE16_1D_128K(n) ((n)&gt;&gt;2)
+
+int main(void) {
+
+  // il nostro array di sprite (sull'OAM)
+  OAMTable* Sprites = (OAMTable*)OAM;
+  
+  // azzeriamo l'OAM (disabilitiamo tutti gli sprite)
+  int i;
+  for (i=0;i&lt;128;i++)
+    Sprites-&gt;oamBuffer[i].attribute[0]=ATTR0_DISABLED | OBJ_Y(192);
+    
+  // impostiamo la memoria video per il background (banco A)
+  vramSetBankA (VRAM_A_MAIN_BG);
+  
+  // impostiamo la memoria video per gli sprite (banco E)
+  vramSetBankE (VRAM_E_MAIN_SPRITE);
+  
+  // impostiamo il modo 0 sul MAIN engine, il BG 0, attiviamo gli sprite
+  videoSetMode ( MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_SPR_ACTIVE
+               | DISPLAY_SPR_1D | DISPLAY_SPR_1D_SIZE_128);
+  
+  // creiamo una tessera a 256 colori (64 bytes)
+  u8 TesseraColorata[8*8] = 
+  {
+    1,1,2,2,0,0,1,1,
+    0,1,1,2,2,0,0,1,
+    0,0,1,1,2,2,0,0,
+    2,0,0,1,1,2,2,0,
+    2,2,0,0,1,1,2,2,
+    1,2,2,0,0,1,1,0,
+    1,1,2,2,0,0,1,1,
+    0,1,1,2,2,0,0,1
+  };
+  
+  // creiamo uno sprite 16x16, 256 colori
+  u8 Sprite[8*8*4] = 
+  {
+    0,0,0,0,0,0,1,1,
+    0,0,0,0,1,1,1,1,
+    0,0,0,1,1,1,1,1,
+    0,0,1,1,1,1,1,1,
+    0,1,1,1,1,1,1,1,
+    0,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,
+    
+    1,1,0,0,0,0,0,0,
+    1,1,1,1,0,0,0,0,
+    1,1,1,1,1,0,0,0,
+    1,1,1,1,1,1,0,0,
+    1,1,1,1,1,1,1,0,
+    1,1,1,1,1,1,1,0,
+    1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,
+    
+    1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,
+    0,1,1,1,1,1,1,1,
+    0,1,1,1,1,1,1,1,
+    0,0,1,1,1,1,1,1,
+    0,0,0,1,1,1,1,1,
+    0,0,0,0,1,1,1,1,
+    0,0,0,0,0,0,1,1,
+    
+    1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,0,
+    1,1,1,1,1,1,1,0,
+    1,1,1,1,1,1,0,0,
+    1,1,1,1,1,0,0,0,
+    1,1,1,1,0,0,0,0,
+    1,1,0,0,0,0,0,0
+  };
+  
+  // copiamo la tessera del background in memoria video
+  swiCopy(TesseraColorata, BG_TILE_RAM(1), 64);
+  
+  // copiamo le tessere dello sprite in memoria video
+  swiCopy(Sprite, SPRITE_GFX, 256);
+
+  // impostiamo i colori 0, 1 e 2 della palette dei background
+  BG_PALETTE [0] = RGB5(0,0,0);
+  BG_PALETTE [1] = RGB5(31,0,0);
+  BG_PALETTE [2] = RGB5(0,0,31);
+  
+  // impostiamo il colore 1 della palette degli sprite
+  SPRITE_PALETTE[1] = RGB5(0,31,8);
+
+  // riempiamo la mappa del background usando la tessera 0
+  for (i=0;i&lt;32*32;i++)
+    ((u16*)BG_MAP_RAM(0)) [i] = 0;
+    
+  // impostiamo il modo del BG 0
+  REG_BG0CNT = BG_32x32 | BG_COLOR_256 | BG_MAP_BASE(0) | BG_TILE_BASE(1);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  // attiviamo il blending degli sprite sul BG 0
+  REG_BLDCNT = BLEND_ALPHA | BLEND_SRC_SPRITE | BLEND_DST_BG0;
+  
+  // impostiamo il blend a 10/16 sprite e 16/16 BG0
+  REG_BLDALPHA = 10 | (16 &lt;&lt; 8);
+  
+  // inizializziamo la posizione dello sprite al centro dello schermo
+  int sp_x = (SCREEN_WIDTH  - 16) / 2;
+  int sp_y = (SCREEN_HEIGHT - 16) / 2;
+
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // il pennino &#xe8; appoggiato sul touch screen?
+    if (keysHeld() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+     
+      // posiziona il centro dello sprite dove &#xe8; stato premuto
+      sp_x = touch.px - 8;
+      sp_y = touch.py - 8;
+    }
+    
+    // posizioniamo lo sprite nella posizione attuale
+    Sprites-&gt;oamBuffer[0].attribute[0]=ATTR0_NORMAL | ATTR0_TYPE_NORMAL | ATTR0_COLOR_256
+                                      |ATTR0_SQUARE | OBJ_Y(sp_y);
+    Sprites-&gt;oamBuffer[0].attribute[1]=ATTR1_SIZE_16 | OBJ_X(sp_x);
+    Sprites-&gt;oamBuffer[0].attribute[2]=ATTR2_PRIORITY(0) | (TILE16_1D_128K(0) &amp; 0x03ff);
+   
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+   }
+}</pre>
+
+<p></p>
+<hr>
+
+<p>Sverx, 3 Luglio 2009. Ultima modifica il 12 Agosto 2009.</p>
+<hr>
+
+<p>Domande? Dubbi? Suggerimenti? Vuoi scambiare due parole con me? Ho preparato
+un <a href="http://libxm7.s2.bizhat.com/index.php?c=3&amp;mforum=libxm7">forum
+apposta</a>!</p>
+
+<p>Torna all'<a href="index.html">indice</a> per accedere alle altre
+sezioni.</p>
+
+<p><sup>riferimenti:</sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram">http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsvideoextendedpalettes">http://nocash.emubase.de/gbatek.htm#dsvideoextendedpalettes</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsvideobgmodescontrol">http://nocash.emubase.de/gbatek.htm#dsvideobgmodescontrol</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdiocolorspecialeffects">http://nocash.emubase.de/gbatek.htm#lcdiocolorspecialeffects</a></sup></p>
+</body>
+</html>

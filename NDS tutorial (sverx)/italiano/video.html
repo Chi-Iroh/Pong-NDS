@@ -1,0 +1,1447 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+  <title>Programmare il Nintendo DS - Tutorial sulla grafica 2D - parte
+  I</title>
+  <meta name="keywords"
+  content="schermi, motori, background, memoria, modi grafici, bitmap, tiled">
+  <style type="text/css" title="Amaya theme">
+/* Modern style for Amaya Editor Lite */
+
+/* default rules for the whole document */
+body {
+    font-size: 12pt;
+    font-family: Verdana;
+    font-weight: normal;
+    font-style: normal;
+    color: black;
+    background-color: white;
+    line-height: 1.2em;
+    margin-left: 4em;
+    margin-right: 2em;
+   }
+
+/* paragraphs */
+p  {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+
+pre {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+
+/* headings */
+h1 {
+    font-size: 180%;
+    font-weight: bold;
+    font-style: normal;
+    font-variant: small-caps;
+    text-align: left;
+    padding: 0;
+    margin-top: 1.7em;
+    margin-bottom: 1.7em;
+   }
+h2 {
+    font-size: 150%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.5em;
+    margin-bottom: 1.1em;
+   }
+h3 {
+    font-size: 130%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.3em;
+    margin-bottom: 1.1em;
+   }
+h4 {
+    font-size: 110%;
+    font-weight: bold;
+    font-style: normal;
+    padding: 0;
+    margin-top: 1.1em;
+    margin-bottom: 1.1em;
+   }
+h5 {
+    font-size: 100%;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+    font-style: italic;
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+
+/* divisions */
+div {
+    padding: 0;
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+
+/* lists */
+ul, ol {
+    padding: 0 0 0 3em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+ul ul, ol ol, ul ol, ol ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+li {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+   }
+li p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+   }
+dl {
+    padding: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+   }
+dl dl {
+    margin-top: 0em;
+    margin-bottom: 0em;
+   }
+dt {
+    padding: 0;
+    font-weight: bold;
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+dd {
+    padding: 0;
+    margin-top: .3em;
+    margin-left: 3em;
+    margin-bottom: .3em;
+   }
+dl p {
+    margin-top: .3em;
+    margin-bottom: .3em;
+   }
+
+/* inline */
+strong {
+    font-weight: bold;
+   }
+em {
+    font-style: italic;
+   }
+code {
+    font-family: Courier New, Courier, monospace;
+    background-color: #f0f0f0;
+   }
+ins {
+    background-color: yellow;
+    text-decoration: underline;
+   }
+del {
+    text-decoration: line-through;
+   }
+
+/* anchors */
+a[href] {
+    color: blue;
+    text-decoration: underline;
+   }
+
+/* end */
+  </style>
+</head>
+
+<body>
+<h2>La grafica 2D del Nintendo DS</h2>
+<hr>
+
+<h4>I motori grafici</h4>
+
+<p style="text-align:justify;">Il Nintendo DS è dotato di due distinti schermi
+LCD, entrambi di risoluzione 256x192 pixel e capaci di mostrare immagini fino a
+262 mila colori (18 bpp, <em>bit per pixel</em>) e di due distinti motori
+grafici, ognuno dei quali collegato ad un solo schermo alla volta. Solamente
+uno dei due motori ha capacità grafiche 3D (quello che verrà sempre chiamato
+<em>MAIN engine</em>), mentre entrambi hanno <em>quasi</em> esattamente le
+stesse capacità riguardo la grafica 2D. E' inoltre possibile scegliere in che
+modo associare i due motori grafici ai due schermi LCD: ad esempio è possibile
+far sì che il <em>MAIN engine</em> generi immagini in grafica 3D/2D sullo
+schermo superiore mentre l'altro motore, il <em>SUB engine</em>, produce
+grafica 2D sullo schermo inferiore, il <em>touch screen</em>, o viceversa.</p>
+
+<p style="text-align:justify;">Le funzioni definite da <em>libnds</em> (in
+<code>system.h</code>) che operano su questa associazione tra i motori e gli
+schermi sono:</p>
+
+<p><code>void lcdMainOnTop(void)</code></p>
+
+<p style="text-align:justify;">che lega l'output del motore principale allo
+schermo superiore e l'output del motore secondario allo schermo inferiore,
+e:</p>
+
+<p><code>void lcdMainOnBottom(void)</code></p>
+
+<p style="text-align:justify;">che, viceversa, lega l'output del motore
+principale allo schermo inferiore e l'output del motore secondario allo schermo
+superiore. Infine vi è la pressoché inutile</p>
+
+<p><code>void lcdSwap(void)</code></p>
+
+<p>che scambia l'associazione corrente degli schermi.</p>
+
+<p></p>
+
+<h4>Le modalità grafiche 2D</h4>
+
+<p style="text-align:justify;">Ognuno dei motori grafici del Nintendo DS ha
+possibilità di lavorare con gli sfondi in un certo numero di modalità distinte,
+categorizzate in due gruppi: i modi <em>testo</em> e i modi <em>bitmap</em>. Il
+<em>MAIN engine</em> ha infine anche un modo <em>diretto</em>.</p>
+
+<p style="text-align:justify;">Nel modo <em>diretto</em>, chiamato <em>Frame
+Buffer</em>, è possibile impostare direttamente i valori RGB (<em>red, green,
+blue</em> - rosso, verde e blu) di ogni pixel dello schermo. In questo modo
+l'immagine potrà mostrare contemporaneamente fino a 32768 colori diversi (15
+bpp) ma richiederà ben 96 KB di memoria video, considerando la dimensione dello
+schermo (256x192 pixel) e il fatto che ogni pixel richiede <em>due</em> byte di
+memoria video. In questa modalità, di fatto, si scavalca il motore grafico e
+quindi non sarà possibile utilizzare nessuna delle caratteristiche di questo,
+come ad esempio, ma non esclusivamente, gli <em>sprite</em>.</p>
+
+<p style="text-align:justify;">Nei modi <em>bitmap</em> è possibile impostare
+per ogni pixel dello schermo un colore scelto in una tavolozza (la
+<em>palette</em>) di 256 colori, palette che viene definita in un'area di
+memoria a parte appositamente dedicata, nella quale per ognuno di questi viene
+definita la terna RGB. In questo modo ogni immagine a pieno schermo può
+mostrare contemporaneamente al massimo 256 colori diversi ma richiede solamente
+48 KB di memoria video poiché ogni pixel richiede esclusivamente <em>un</em>
+byte. E' però anche possibile utilizzare i modi <em>bitmap</em> a 32768 colori
+e quindi analoghi in un certo senso al modo <em>diretto</em>, pur essendo
+comunque gestiti dal motore grafico che, in questo caso, non viene
+scavalcato.</p>
+
+<p style="text-align:justify;">I modi <em>testo</em>, detti anche
+<em>tiled</em> ovvero <em>a tessere</em> sono di gran lunga sia i più complessi
+dal punto di vista del funzionamento sia i più utilizzati perché sfruttano in
+modo molto efficiente le funzionalità dell'<em>hardware</em> grafico 2D. In
+questa modalità si definisce nella memoria video un archivio di immagini da 8x8
+pixel, a 16 o a 256 colori, e poi queste tessere verranno composte sullo
+schermo usando una mappa, una matrice che descrive quali tessere (come se
+fossero caratteri, da cui appunto modo <em>testo</em>) posizionare una a fianco
+dell'altra, una sopra l'altra, a formare un'immagine sola.</p>
+
+<p style="text-align:justify;">Sia nei modi <em>testo</em> che nei modi
+<em>bitmap</em> ogni schermo in realtà non avrà un solo sfondo ma ben 4 sfondi
+sovrapposti (i <em>background</em>) con la possibilità di definire quali pixel
+dovranno e quali non dovranno essere disegnati, permettendo così di poter
+vedere gli sfondi sottostanti attraverso quelli sovrastanti. Alcuni
+<em>background</em> poi, a seconda di quale modalità si sta utilizzando,
+potranno essere traslati in orizzontale e in verticale (<em>scrolling</em>)
+oppure addirittura ruotati o anche ingranditi o rimpiccioliti (<em>rotation and
+scaling</em>), tutto in modo molto semplice.</p>
+
+<p style="text-align:justify;">Infine ogni motore grafico, in aggiunta ai
+suddetti modi per gli sfondi, può gestire gli <em>sprite</em>. Ogni motore ne
+ha a disposizione fino a 128, di dimensioni a partire dal più piccolo
+definibile, 8x8 pixel, fino ai più grandi di 64x64 pixel. Ma parleremo della
+gestione degli <em>sprite</em> più approfonditamente in seguito.</p>
+
+<p>Per attivare il modo grafico desiderato <em>libnds</em> ci mette a
+disposizione le due seguenti funzioni, definite anche queste in
+<code>video.h</code>:</p>
+
+<p><code>void videoSetMode(u32 mode)</code></p>
+
+<p><code>void videoSetModeSub(u32 mode)</code></p>
+
+<p style="text-align:justify;">che, rispettivamente, attivano la modalità
+desiderata sul motore grafico principale o sul secondario e inoltre specificano
+quali altre caratteristiche vorremo utilizzare: ad esempio potremmo richiedere
+che solo due dei quattro <em>background</em> siano attivi, che siano attivi gli
+<em>sprite</em> e spento il motore grafico 3D, e che si utilizzino le
+<em>palette</em> estese sia per i <em>background</em> che per gli
+<em>sprite</em>. A puro titolo di esempio.</p>
+
+<p></p>
+
+<h4>La memoria video</h4>
+
+<p style="text-align:justify;">Prima di addentrarci nei dettagli dell'uso della
+grafica, è necessario chiarire il funzionamento della memoria video del
+Nintendo DS. La consolle è equipaggiata con un totale di 656 KB di memoria
+video dedicata, suddivisa in 9 banchi di diversa dimensione e funzionalità. In
+comune tutti questi banchi hanno poche cose: ad esempio tutti hanno accesso a
+16 bit in lettura e scrittura, cosa da tenere bene a mente perché per poter
+cambiare il valore di un byte o di un <em>nibble</em> in questa memoria bisogna
+prima leggere la <em>halfword</em> (16 bit) che lo contiene, modificare la
+parte desiderata ed infine riscrivere l'intera <em>halfword</em>. I tentativi
+di scrivere direttamente dei byte in queste memorie vengono ignorati, quindi
+bisogna prestare attenzione oppure sarà come non aver fatto nessuna scrittura.
+Questi 9 banchi, per convenzione, sono indicati con le lettere dalla A alla I e
+di questi i primi 4 (A, B, C, D) sono anche detti banchi <em>principali</em> e
+hanno una dimensione di 128 KB ognuno, mentre i successivi banchi hanno varie
+dimensioni tra i 16 KB e i 64 KB.</p>
+
+<p style="text-align:justify;">Ciò che apparirà complicato, e in effetti un po'
+lo è, è che alcuni banchi possono essere utilizzati con un motore grafico e non
+con l'altro, o possono essere dedicati ad alcune funzioni mentre altri banchi
+no, ed alcune funzioni possono essere svolte da un banco o da un altro mentre
+in certi casi per certe funzioni esiste uno ed un solo banco che è possibile
+utilizzare. A volte ciò potrebbe comportare lo spreco di un certo ammontare di
+memoria, oppure, al contrario, il dover rinunciare a certe funzionalità o
+limitarle. O anche potrebbe rendersi necessario ripianificare le associazioni
+tra i banchi e le funzioni a questi assegnate... tutto questo,
+fondamentalmente, perché per un banco non è possibile compiere due funzioni
+nello stesso momento.</p>
+
+<p style="text-align:justify;">Scendiamo in dettaglio: oltre ai 4 banchi
+principali, che come abbiamo detto sono anche i 4 più grandi avendo una taglia
+di 128 KB ognuno, abbiamo ancora il banco E, da 64 KB, il banco F ed il banco
+G, entrambi da 16 KB, poi H da 32 KB ed infine l'ultimo banco, I, da 16 KB.</p>
+
+<p>Le diverse funzioni che è possibile assegnare ai banchi sono:</p>
+
+<p style="text-align:justify;">- LCD (nessuna funzione): il banco è mappato ad
+un indirizzo fisso, diverso per ognuno, in modo da comporre un unico continuo
+blocco di memoria, se dovesse servire. Tutti i banchi sono in grado di lavorare
+in questa modalità.<br>
+- Texture memory: il banco viene utilizzato come memoria per le texture che
+verranno usate dal motore 3D, evidentemente solo del <em>MAIN engine</em> dato
+che il <em>SUB engine</em> non è dotato di capacità 3D come già detto. Solo i 4
+banchi principali (A, B, C, D) sono in grado di svolgere questa funzione.<br>
+- Palette texture memory: il banco viene utilizzato come memoria per le
+<em>palette</em> (tavolozze colori) delle texture, per quelle texture che ne
+hanno bisogno. Solo i banchi E, F e G sono in grado di svolgere questa
+funzione.<br>
+- Background memory del <em>MAIN engine</em>: il banco viene utilizzato come
+memoria per i background (indipendentemente da quanti se ne useranno) del
+motore principale. Possibile con tutti i banchi tranne gli ultimi due, H e
+I.<br>
+- Background memory del <em>SUB</em> engine: il banco viene utilizzato come
+memoria per i background del motore secondario, analogamente a quello che
+capita con il <em>MAIN</em> engine. Questo modo è possibile solo sui banchi C,
+H e I.<br>
+- Sprite memory del <em>MAIN</em> engine: il banco viene utilizzato come
+memoria per gli sprite del motore principale. Solo sui banchi A, B, E, F e
+G.<br>
+- Sprite memory del <em>SUB</em> engine: il banco viene utilizzato come memoria
+per gli sprite del motore secondario. Solo i banchi D e I.<br>
+- Memoria per le palette estese dei background / degli sprite del <em>MAIN</em>
+/ <em>SUB</em> engine (tutte le 4 modalità sono distinte): parleremo delle
+palette estese più avanti, per ora accontentatevi di sapere che sul Nintendo DS
+è possibile dichiarare fino a 16 palette (da 16 o da 256 colori) per ogni
+background e fino ad altre 16 palette per gli sprite. Per ognuno dei due
+motori, ovviamente.</p>
+
+<p style="text-align:justify;">Le funzioni definite da libnds nel file
+<code>video.h</code> per impostare le modalità di funzionamento dei banchi sono
+le seguenti:</p>
+
+<p><code>void vramSetBankA(VRAM_A_TYPE a)</code></p>
+
+<p><code>void vramSetBankB(VRAM_B_TYPE b)</code></p>
+
+<p><code>void vramSetBankC(VRAM_C_TYPE c)</code></p>
+
+<p><code>void vramSetBankD(VRAM_D_TYPE d)</code></p>
+
+<p><code>void vramSetBankE(VRAM_E_TYPE e)</code></p>
+
+<p><code>void vramSetBankF(VRAM_F_TYPE f)</code></p>
+
+<p><code>void vramSetBankG(VRAM_G_TYPE g)</code></p>
+
+<p><code>void vramSetBankH(VRAM_H_TYPE h)</code></p>
+
+<p><code>void vramSetBankI(VRAM_I_TYPE i)</code></p>
+
+<p style="text-align:justify;">Come parametro ognuna accetta un membro di
+un'enumerazione definita appositamente per ogni banco, stanti appunto le
+diverse funzionalità di ogni banco. Oltre alle funzioni sopracitate si
+definiscono anche le seguenti funzioni che possono risultare comode:</p>
+
+<p><code>u32 vramSetMainBanks(VRAM_A_TYPE a, VRAM_B_TYPE b, VRAM_C_TYPE c,
+VRAM_D_TYPE d)</code></p>
+
+<p style="text-align:justify;">Imposta le proprietà per i 4 banchi principali
+(A, B, C, D) e restituisce il valore delle modalità precedentemente attive nei
+suddetti banchi, modalità che possono poi essere ripristinate rapidamente con
+l'apposita funzione:</p>
+
+<p><code>void vramRestoreMainBanks(u32 vramTemp)</code></p>
+
+<p style="text-align:justify;">La tabella seguente riassume le modalità
+possibili per ogni banco, utilizzando le enumerazioni di libnds che possono
+essere utilizzate con le sopracitate funzioni per attivare le modalità
+richieste.</p>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <td><em>Memoria (dimensione)</em></td>
+      <td><em>Modalità utilizzabili (*)</em></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_A (128 KB)</td>
+      <td><code>VRAM_A_LCD<br>
+        VRAM_A_TEXTURE<br>
+        VRAM_A_MAIN_BG<br>
+        VRAM_A_MAIN_SPRITE</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_B (128 KB)</td>
+      <td><code>VRAM_B_LCD<br>
+        VRAM_B_TEXTURE<br>
+        VRAM_B_MAIN_BG<br>
+        VRAM_B_MAIN_SPRITE</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_C (128 KB)</td>
+      <td><code>VRAM_C_LCD<br>
+        VRAM_C_TEXTURE<br>
+        VRAM_C_MAIN_BG<br>
+        VRAM_C_SUB_BG</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_D (128 KB)</td>
+      <td><code>VRAM_D_LCD<br>
+        VRAM_D_TEXTURE<br>
+        VRAM_D_MAIN_BG<br>
+        VRAM_D_SUB_SPRITE</code><br>
+      </td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_E (64 KB)</td>
+      <td><code>VRAM_E_LCD<br>
+        VRAM_E_MAIN_BG<br>
+        VRAM_E_MAIN_SPRITE<br>
+        VRAM_E_TEX_PALETTE<br>
+        VRAM_E_BG_EXT_PALETTE<br>
+        </code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_F (16 KB)</td>
+      <td><code>VRAM_F_LCD<br>
+        VRAM_F_MAIN_BG<br>
+        VRAM_F_MAIN_SPRITE<br>
+        VRAM_F_TEX_PALETTE<br>
+        VRAM_F_BG_EXT_PALETTE<br>
+        VRAM_F_SPRITE_EXT_PALETTE</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_G (16 KB)</td>
+      <td><code>VRAM_G_LCD<br>
+        VRAM_G_MAIN_BG<br>
+        VRAM_G_MAIN_SPRITE<br>
+        VRAM_G_TEX_PALETTE<br>
+        VRAM_G_BG_EXT_PALETTE<br>
+        VRAM_G_SPRITE_EXT_PALETTE</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_H (32 KB)</td>
+      <td><code>VRAM_H_LCD<br>
+        VRAM_H_SUB_BG<br>
+        VRAM_H_SUB_BG_EXT_PALETTE</code></td>
+    </tr>
+    <tr>
+      <td>VRAM_BANK_I (16 KB)</td>
+      <td><code>VRAM_I_LCD<br>
+        VRAM_I_SUB_BG</code><sup>(1)</sup><code><br>
+        VRAM_I_SUB_SPRITE<br>
+        VRAM_I_SUB_SPRITE_EXT_PALETTE</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">(*) L'elenco non è completo. Esistono altri
+valori, nelle enumerazioni definite da libnds, che però non sono relativi ad
+altre modalità grafiche ma semplicemente all'associazione degli indirizzi di
+memoria per i vari banchi. Non tratteremo l'argomento, per ora.</p>
+
+<p>Per l'elenco completo delle enumerazioni definite da libnds, tutte le
+possibili modalità d'utilizzo dei banchi di memoria video vedi la <a
+href="vram_modes.html">Tabella 1:<strong>Tutte le modalità della memoria
+video</strong></a>.</p>
+
+<p style="text-align:justify;"><sup>(1)</sup> In realtà questa specifica
+enumerazione non è stata mai definita in <em>libnds</em>, comunque il banco I
+può essere utilizzato per i <em>background</em> del <em>SUB engine</em>, quindi
+mi è parso corretto riportarlo.</p>
+
+<h4>Uso del modo <em>Frame Buffer</em></h4>
+
+<p style="text-align:justify;">Come abbiamo anticipato, uno dei possibili modi
+grafici è il <em>Frame Buffer</em>, ovvero la possibilità, limitata però al
+solo <em>MAIN engine</em>, di controllare direttamente l'intensità di rosso,
+verde e blu di ogni pixel sullo schermo. Esiste sul Nintendo DS la possibilità
+di attivare uno di 4 <em>Frame Buffer</em>, numerati da 0 a 3, ed ognuno di
+questi usa come memoria associata uno dei banchi di memoria video principali,
+quindi il modo <code>MODE_FB0</code> utilizza il banco A, il
+<code>MODE_FB1</code> si serve del banco B, il <code>MODE_FB2</code> il banco C
+ed infine al <code>MODE_FB3</code> è abbinato il banco D. Questo consente di
+implementare semplici tecniche di animazione: utilizzando due <em>Frame
+Buffer</em> è possibile, ad esempio, disegnare un fotogramma senza mostrarlo
+finché non è completo e poi, una volta mostrato quello completo, cancellare e
+ridisegnare un nuovo fotogramma su quello che era stato mostrato prima. Questa
+tecnica si chiama <em>Double Buffering</em> e se lo scambio viene fatto con un
+intervallo regolare tra un fotogramma e l'altro può funzionare molto bene, ed è
+quello che si faceva ad esempio su un PC quando le schede grafiche non avevano
+capacità di accelerazione 2D/3D: di nascosto si cancellava e si ridisegnava
+tutto da capo, pixel per pixel, ogni volta.</p>
+
+<p style="text-align:justify;">Nell'esempio che segue utilizzeremo un <em>Frame
+Buffer</em>, il numero 0, configurando il banco di memoria video A nel modo
+corretto, il modo LCD, per creare un piccolo programmino che disegni un pixel
+bianco dove l'utente preme con il pennino.</p>
+<pre>#include &lt;nds.h&gt;
+
+int main(void) {
+
+  // impostiamo la memoria video
+  vramSetBankA (VRAM_A_LCD);
+  
+  // impostiamo il modo framebuffer 0 sul MAIN engine
+  videoSetMode (MODE_FB0);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // stiamo premendo sul touch screen?
+    if (keysHeld() &amp; KEY_TOUCH) {
+
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // metti un pixel bianco dove è stato premuto
+      VRAM_A [touch.py * SCREEN_WIDTH + touch.px] = RGB5(31,31,31);
+    }
+      
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p></p>
+
+<h4>I modi <em>bitmap</em></h4>
+
+<p style="text-align:justify;">A differenza dell'appena citato modo <em>Frame
+Buffer</em>, che funziona utilizzando direttamente l'intero schermo, i modi
+<em>tiled</em> e <em>bitmap</em> lavorano sui <em>background</em> e dato che,
+come abbiamo già detto, è possibile avere fino a 4 background
+contemporaneamente su ogni schermo, va da sé che potremmo anche avere
+contemporaneamente dei <em>background</em> <em>tiled</em> e dei
+<em>background</em> <em>bitmap</em>. Quindi, prima di iniziare a parlare dei
+<em>background</em> <em>bitmap</em> in specifico, chiariamo come si attivano i
+famosi 4 <em>background</em>.</p>
+
+<p style="text-align:justify;">Esistono 6 distinte modalità, tutte funzionanti
+in egual modo su entrambi i motori grafici, che si differenziano semplicemente
+in base a quali saranno le funzioni possibili dei 4 <em>background</em>. Perché
+ogni <em>background</em> può essere semplicemente di tipo
+<strong>testo</strong>, oppure <strong>rotazionale</strong> o infine di tipo
+<strong>esteso</strong> (il nome completo sarebbe <strong>rotazionale
+esteso</strong>, per brevità lo chiameremo sempre semplicemente
+<strong>esteso</strong>), ed è solo quest'ultimo tipo,
+l'<strong>esteso</strong> appunto, che consente la modalità <em>bitmap</em>. La
+tabella seguente dettaglia il modo in cui lavoreranno i 4 <em>background</em>
+nelle 6 modalità possibili, con i nomi di queste modalità così come definiti da
+<em>libnds</em>.</p>
+
+<table border="1">
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+  <tbody>
+    <tr>
+      <td>Modo grafico</td>
+      <td>Background 0 (*)</td>
+      <td>Background 1</td>
+      <td>Background 2</td>
+      <td>Background 3</td>
+    </tr>
+    <tr>
+      <td><code>MODE_0_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Testo</td>
+    </tr>
+    <tr>
+      <td><code>MODE_1_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Rotazionale</td>
+    </tr>
+    <tr>
+      <td><code>MODE_2_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Rotazionale</td>
+      <td>Rotazionale</td>
+    </tr>
+    <tr>
+      <td><code>MODE_3_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Esteso</td>
+    </tr>
+    <tr>
+      <td><code>MODE_4_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Rotazionale</td>
+      <td>Esteso</td>
+    </tr>
+    <tr>
+      <td><code>MODE_5_2D</code></td>
+      <td>Testo</td>
+      <td>Testo</td>
+      <td>Esteso</td>
+      <td>Esteso</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:justify;">(*) Attivando il motore 3D il background 0 viene
+"ceduto" alla grafica 3D ed utilizzato in esclusiva da questo. Solo sul
+<em>MAIN</em> engine, ovviamente, come abbiamo visto.</p>
+
+<p style="text-align:justify;">In queste modalità appena descritte in realtà
+non siamo neanche davvero obbligati ad usare tutti e 4 i <em>background</em> ed
+infatti, se non specifichiamo altrimenti, nessuno dei <em>background</em> verrà
+attivato. Quindi quando dichiareremo il modo in cui opereremo dovremo
+ricordarci di attivare i <em>background</em> che desideriamo utilizzare,
+analogamente a come faremo quando vorremo anche utilizzare gli <em>sprite</em>,
+ad esempio, o le <em>palette</em> estese.</p>
+
+<p style="text-align:justify;">Dobbiamo ancora dire che, come si accennava
+all'inizio, è possibile avere modi <em>bitmap</em> a 256 e 32768 colori. Per
+selezionare il nostro preferito non dovremo cambiare modalità grafica,
+semplicemente cambiare modalità al <em>background</em>, e per questo
+<em>libnds</em> ha definito delle costanti (in <code>background.h</code>) per
+accedere facilmente ai registri di controllo dei <em>background</em> e per
+settare le modalità desiderate. I registri principali per controllare i 4
+<em>background</em> sul <em>MAIN</em> engine sono, rispettivamente,
+<code>REG_BG0CNT</code>, <code>REG_BG1CNT</code>, <code>REG_BG2CNT</code> e
+<code>REG_BG3CNT</code> mentre sul <em>SUB</em> engine sono
+<code>REG_BG0CNT_SUB</code>, <code>REG_BG1CNT_SUB</code>,
+<code>REG_BG2CNT_SUB</code> e <code>REG_BG3CNT_SUB</code>. I modi
+<em>bitmap</em> sui <em>background</em> estesi permettono l'utilizzo di bitmap
+di 4 diverse dimensioni (128x128 pixel, 256x256 pixel, 512x256 pixel -l'unica a
+non essere quadrata- ed infine 512x512 pixel) per ognuna delle due profondità
+di colore possibili generando quindi 8 possibilità che vengono definite in
+<em>libnds</em>, in <code>background.h</code>, come seguono:</p>
+
+<p>256 colori (8 bpp):</p>
+
+<p><code>BG_BMP8_128x128<br>
+BG_BMP8_256x256<br>
+BG_BMP8_512x256<br>
+BG_BMP8_512x512</code> (richiede 256KB di memoria video)</p>
+
+<p>32768 colori (15 bpp):</p>
+
+<p><code>BG_BMP16_128x128<br>
+BG_BMP16_256x256<br>
+BG_BMP16_512x256</code> (richiede 256KB di memoria video)<br>
+<code>BG_BMP16_512x512</code> (richiede 512KB di memoria video)</p>
+
+<p style="text-align:justify;">Per completezza è opportuno precisare che in
+realtà il <em>MAIN engine</em> ha ancora una modalità grafica nella quale i 4
+<em>background</em> distinti spariscono e rimane un unico <em>background</em>
+in modo <em>bitmap</em> (chiamato <em>Mode 6</em> o anche <em>large bitmap
+mode</em>) che consente <em>bitmap</em> di dimensioni 1024x512 pixel oppure
+512x1024 pixel a 256 colori (8 bpp). Il modo in questione è definito in
+<em>libnds</em> come <code>MODE_6_2D</code> e le <em>bitmap</em>, controllabili
+attraverso il registro del <em>background</em> 2, <code>REG_BG2CNT</code>, sono
+definite come segue:</p>
+
+<p><code>BG_BMP8_1024x512</code> (richiede 512KB di memoria video)<br>
+<code>BG_BMP8_512x1024</code> (richiede 512KB di memoria video)</p>
+
+<p style="text-align:justify;">Nell'esempio che segue utilizzeremo il
+<em>background</em> 3 (<strong>esteso</strong>) del modo 4 (il modo 3 o il modo
+5 non avrebbero fatto differenza comunque) del <em>SUB engine</em>, per
+disegnare un pixel bianco dove l'utente preme con il pennino, in modo analogo
+all'esempio precedente. Da notare però che in questo esempio utilizzeremo il
+motore grafico secondario e il banco di memoria C impostato in modalità
+<em>background</em> (e non il banco A poiché non può lavorare come
+<em>background</em> per il <em>SUB engine</em>, come abbiamo già detto).
+Riguardo la matrice di rotazione/dimensionamento alla quale faremo riferimento:
+ne parleremo più avanti, quando tratteremo l'argomento dei background
+<strong>rotazionali</strong>.</p>
+<pre>#include &lt;nds.h&gt;
+
+int main(void) {
+
+  // impostiamo la memoria video (banco C)
+  vramSetBankC (VRAM_C_SUB_BG);
+  
+  // impostiamo il modo 4 sul SUB engine
+  // e attiviamo il background 3
+  videoSetModeSub (MODE_4_2D | DISPLAY_BG3_ACTIVE);
+  
+  // impostiamo il BG 3 al modo 256x256 a 16 bpp
+  // e indichiamo dove inizia in memoria la bitmap
+  REG_BG3CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(0);
+  
+  // 'azzera' la matrice di rotazione/dimensionamento per il background 3
+  REG_BG3PA_SUB = 1 &lt;&lt; 8;
+  REG_BG3PB_SUB = 0;
+  REG_BG3PC_SUB = 0;
+  REG_BG3PD_SUB = 1 &lt;&lt; 8;
+  
+  // associamo il MAIN engine allo schermo superiore
+  // quindi il SUB engine sarà associato al touchscreen
+  lcdMainOnTop ();
+  
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // stiamo premendo sul touch screen?
+    if (keysHeld() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // metti un pixel bianco dove è stato premuto
+      BG_GFX_SUB [touch.py * SCREEN_WIDTH + touch.px] = RGB5(31,31,31) | BIT (15);
+    }
+
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p style="text-align:justify;">Sono almeno tre le differenze che saltano subito
+all'occhio in questo esempio, se paragonato all'esempio precedente, quello del
+<em>Frame Buffer</em>. Il primo è che nell'impostare la modalità
+<em>bitmap</em> per il <em>background</em> 3 abbiamo anche dovuto dirgli dove,
+nella memoria video assegnata ai <em>background</em>, inizia la <em>bitmap</em>
+che vogliamo visualizzare. Questo perché, ovviamente, si può usare lo stesso
+banco di memoria video non per un solo <em>background</em> ma per tutti,
+capienza permettendo, quindi va specificata per ogni <em>background</em> una
+informazione che dice dove inizia la <em>bitmap</em>, in passi da 16 KB.</p>
+
+<p style="text-align:justify;">La seconda differenza è che per accendere un
+pixel questa volta non scriviamo all'indirizzo del banco di memoria C ma ad un
+indirizzo apposito (<code>BG_GFX_SUB</code>, l'analogo per il <em>MAIN
+engine</em> è <code>BG_GFX</code>) al quale è associato l'indirizzo della
+memoria dei <em>background</em> del <em>SUB engine</em>. Questo ha il vantaggio
+che se dovessimo un domani decidere di usare un altro banco di memoria invece
+del banco C non dovremmo comunque modificare questo riferimento nel codice.
+Infine c'è anche da dire che quando al banco di memoria abbiamo detto di
+lavorare in una modalità diversa dal modo LCD, questo banco non sarà più
+raggiungibile all'indirizzo dove sarebbe stato raggiungibile altrimenti. Questo
+vale ovviamente per tutti i banchi di memoria video e più avanti vedremo
+addirittura che in alcune modalità i banchi di memoria video non saranno
+mappati a nessun indirizzo e quindi non sarà neanche possibile scriverci
+dentro.</p>
+
+<p style="text-align:justify;">Ma non anticipiamo ora questo, e invece facciamo
+notare l'ultima delle tre differenze: questa volta oltre che dare al pixel da
+disegnare il colore bianco (su 15 bit), abbiamo anche dovuto accendere il bit
+più significativo della <em>halfword</em>. Questo bit è il canale <em>alfa</em>
+(trasparenza) e ha due valori ai quali sono legati due semplici significati: se
+è 1 allora il pixel va disegnato, se è 0 invece il pixel non va disegnato e
+quindi sarà possibile vedere i <em>background</em> sottostanti attraverso
+questo <em>background</em>. Una possibilità che il <em>Frame Buffer</em> non
+ha.</p>
+
+<p style="text-align:justify;">Un'ultima considerazione, valida sia per i
+<em>background</em> di tipo <em>bitmap</em>, dei quali abbiamo appena scritto,
+che per i <em>background</em> di tipo testo, che ci apprestiamo a descrivere:
+in tutte le modalità che usano le palette (quindi sia i modi a 16 che i modi a
+256 colori) i pixel definiti di colore 0 (zero) non saranno disegnati se sono
+attivi altri <em>background</em> dietro a quello sul quale stiamo disegnando.
+Questo perché altrimenti non sarebbe mai possibile vedere gli altri
+<em>background</em> attraverso questo, il che renderebbe infine gli altri
+<em>background</em> praticamente inutili. Torneremo comunque su questo
+argomento alla fine di questo documento.</p>
+
+<h4>I modi <em>tiled</em></h4>
+
+<p style="text-align:justify;">I modi 'a tessere' sono di gran lunga i modi più
+utilizzati per il grande risparmio di memoria e l'alta efficienza che portano
+ai programmi che li utilizzano. Il risparmio di memoria proviene dal riutilizzo
+continuo delle stesse tessere di 8x8 pixel, che quindi andranno ad occupare
+sempre lo stesso ammontare di memoria video indipendentemente da quante volte
+questa tessera verrà poi visualizzata sullo schermo. E' possibile utilizzare
+fino a 1024 tessere diverse per <em>background</em> se questo è nella modalità
+<strong>testo</strong> o <strong>esteso</strong>, e ogni tessera può anche
+essere visualizzata ribaltata orizzontalmente (<em>mirror</em>), ovvero con
+tutti i pixel di ogni riga disegnati in ordine inverso da destra verso
+sinistra, oppure ribaltata verticalmente (<em>flip</em>), ovvero con tutti i
+pixel di ogni colonna disegnati sottosopra, o anche avere entrambe le
+caratteristiche contemporaneamente. Nella modalità <strong>rotazionale</strong>
+invece non sono possibili né <em>mirror</em> né <em>flip</em> e il limite
+massimo di tessere utilizzabili è 256.</p>
+
+<p style="text-align:justify;">Per utilizzare questi modi si dovranno quindi
+distinguere, nella memoria video riservata ai <em>background</em>, un'area dove
+depositare le tessere e un'area dove depositare le mappe che descrivono come le
+tessere andranno posizionate per comporre il <em>background</em>. Le mappe dei
+background in modalità <strong>testo</strong> possono avere dimensioni di 32x32
+tessere (generando quindi un <em>background</em> di 256x256 pixel) o di 64x32 o
+32x64 tessere, sebbene in ogni caso siano in realtà due mappe da 32x32 tessere
+affiancate o sovrapposte l'una all'altra, oppure ancora possiamo avere una
+mappa di 64x64 tessere, in realtà utilizzando 4 mappe adiacenti da 32x32
+tessere ognuna. In <em>libnds</em> queste modalità per i <em>tiled
+background</em> di tipo <strong>testo</strong> sono definite come segue:</p>
+
+<p><code>BG_32x32<br>
+BG_64x32<br>
+BG_32x64<br>
+BG_64x64</code></p>
+
+<p style="text-align:justify;">Per i <em>background</em> di tipo
+<strong>esteso</strong> invece è possibile utilizzare mappe a partire dalla
+dimensione di 16x16 tessere (512 byte di dimensione in memoria video, genera un
+<em>background</em> di 128x128 pixel) fino a 128x128 tessere (32 KB occupati
+dalla mappa, genera un <em>background</em> di 1024x1024 pixel) ma stavolta
+rappresentate in memoria come un'unica mappa, e quindi ne sarà immediato
+l'utilizzo. In <em>libnds</em> queste modalità per i <em>tiled background</em>
+di tipo <strong>esteso</strong> si possono utilizzare attraverso le seguenti
+definizioni:</p>
+
+<p><code>BG_RS_16x16<br>
+BG_RS_32x32<br>
+BG_RS_64x64<br>
+BG_RS_128x128</code></p>
+
+<p>che sono le stesse che useremo per i <em>tiled background</em> di tipo
+<strong>rotazionale</strong>, mentre per scegliere la profondità di colore per
+le tessere dei <em>background</em> <strong>testo</strong> sono definite le
+seguenti costanti:</p>
+
+<p><code>BG_COLOR_16</code><br>
+<code>BG_COLOR_256</code></p>
+
+<p style="text-align:justify;">che selezionano rispettivamente, come si
+intuisce, le tessere a 16 colori (4 bpp, quindi ogni <em>halfword</em> contiene
+4 pixel) e quelle a 256 colori (8 bbp, 2 pixel per ogni <em>halfword</em>).
+Queste costanti non sono invece da usare per i <em>background</em> di tipo
+<strong>esteso</strong>: questi possono esclusivamente utilizzare tessere a 256
+colori. Ma quali sono questi colori tra i quali possiamo scegliere i nostri 16
+o 256? In qualunque modo grafico a 16 e 256 colori (quindi anche nel modo
+<em>bitmap</em> a 8 bpp) il colore di ogni pixel è in realtà l'indice di un
+elemento nella tavolozza (<em>palette</em>) e ognuno dei due motori grafici del
+Nintendo DS ha una <em>palette</em> apposta per i background e una apposta,
+distinta dalla precedente, per gli sprite, oltre alle <em>palette</em> estese
+di cui parleremo più avanti. (Tutte queste <em>palette</em> sono memorizzate in
+un'area di memoria appositamente dedicata e non facente parte dei 9 banchi di
+memoria video). Ogni elemento della <em>palette</em> è una <em>halfword</em>
+che definisce il colore su 15 bit in modo del tutto analogo a quanto fatto
+nella modalità video diretta del <em>Frame Buffer</em>. Le quattro
+<em>palette</em> standard sono definite da <em>libnds</em> come vettori ognuno
+di 256 elementi con i seguenti nomi:</p>
+
+<p><code>BG_PALETTE<br>
+SPRITE_PALETTE<br>
+BG_PALETTE_SUB<br>
+SPRITE_PALETTE_SUB</code></p>
+
+<p style="text-align:justify;">Quindi per utilizzare un modo grafico testo
+dovremo obbligatoriamente svolgere almeno le seguenti operazioni:</p>
+
+<p style="text-align:justify;">- Impostare un banco di memoria video per i
+<em>background</em>.<br>
+- Impostare un motore grafico in un modo tra il modo 0 e il modo 5, e attivare
+almeno un <em>background</em>.<br>
+- Caricare nella memoria video le tessere di 8x8 pixel, prestando attenzione
+alla profondità del colore (le tessere a 16 colori occupano 32 byte ognuna
+mentre le tessere a 256 colori occupano 64 byte ognuna)<br>
+- Caricare nella <em>palette</em> dei <em>background</em> del motore grafico in
+uso tutti i colori che verranno utilizzati dalle tessere<br>
+- Caricare nella memoria video almeno una mappa per le tessere, che usi le
+tessere definite<br>
+- Impostare il background prescelto nella modalità corretta, in accordo alle
+dimensioni della mappa e al numero di colori</p>
+
+<p style="text-align:justify;">Nell'esempio utilizzeremo il <em>MAIN
+engine</em> per visualizzare un quadratino circa al centro del touchscreen,
+utilizzando il modo grafico 0 e il <em>background</em> 1 in modo testo a 16
+colori, con una mappa 32x32 tessere. Proveremo a far muovere il quadratino
+seguendo il pennino trascinato sullo schermo.</p>
+<pre>#include &lt;nds.h&gt;
+
+int main(void) {
+
+  // impostiamo la memoria video (banco A)
+  vramSetBankA (VRAM_A_MAIN_BG);
+  
+  // impostiamo il modo 0 sul MAIN engine e attiviamo il BG 1
+  videoSetMode (MODE_0_2D | DISPLAY_BG1_ACTIVE);
+  
+  // creiamo una tessera vuota (32 byte)
+  u32 TesseraVuota[8] = 
+  {
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000,
+    0x00000000
+  };
+  
+  // creiamo una tessera con un quadratino (32 byte)
+  u32 TesseraQuadratino[8] = 
+  {
+    0x11111111,
+    0x10000001,
+    0x10000001,
+    0x10000001,
+    0x10000001,
+    0x10000001,
+    0x10000001,
+    0x11111111
+  };
+  
+  // copiamo le tessera in memoria video (32 byte ognuna)
+  swiCopy(TesseraVuota, BG_TILE_RAM(1), 32);
+  swiCopy(TesseraQuadratino, (u8*)BG_TILE_RAM(1) + 32, 32);
+  
+  // impostiamo la palette ai colori 0=nero, 1=blu intenso
+  BG_PALETTE [0] = RGB5(0,0,0);
+  BG_PALETTE [1] = RGB5(0,0,31);
+  
+  // riempiamo la mappa usando la tessera vuota (è la tessera #0)
+  int i;
+  for (i=0;i&lt;32*32;i++)
+    ((u16*)BG_MAP_RAM(0)) [i] = 0;
+    
+  // mettiamo la tessera con il quadratino (la #1) circa in centro
+  // allo schermo (15,11)
+  ((u16*)BG_MAP_RAM(0)) [11*32+15] = 1;
+    
+  // impostiamo il BG 1 al modo tiled 32x32 a 4 bpp
+  // e indichiamo dove iniziano nella memoria video la mappa e le tessere
+  REG_BG1CNT = BG_32x32 | BG_COLOR_16 | BG_MAP_BASE(0) | BG_TILE_BASE(1);
+  
+  // associamo il MAIN engine allo schermo inferiore, il touchscreen
+  lcdMainOnBottom ();
+  
+  int down_X=0, down_Y=0;
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // abbiamo appena toccato il touch screen?
+    if (keysDown() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // memorizziamola per vedere dove va a finire
+      down_X=touch.px;
+      down_Y=touch.py;
+    }
+  
+    // oppure siamo ancora appoggiati sul touch screen?
+    else if (keysHeld() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // sposta il BG 1 seguendo il trascinamento
+      REG_BG1HOFS = down_X - touch.px;
+      REG_BG1VOFS = down_Y - touch.py;
+    }
+    
+    // altrimenti riallinea al centro il quadratino
+    else {
+     
+      // sposta il BG 1 "a zero"
+      REG_BG1HOFS = 0;
+      REG_BG1VOFS = 0;
+    }
+    
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}</pre>
+
+<p style="text-align:justify;">Ora chiariamo alcuni dettagli. Il primo è
+relativo alla funzione <code>swiCopy()</code>. Questa funzione utilizza delle
+procedure che effettuano la copia di dati da una locazione all'altra tra le
+varie memorie della consolle; non è una procedura veloce, ma è molto comoda
+perché gestisce autonomamente la scrittura a 16 bit che è richiesta dalla
+memoria video, nonostante nella funzione si debba specificare il numero di byte
+che devono essere copiati. Non importa, ma ricordatevi che in realtà nel nostro
+caso la funzione non farà la copia di 32 byte ma di 16 <em>halfword</em>.
+Ovviamente a patto che non vogliate copiare un numero dispari di byte, nel qual
+caso l'operazione fallirebbe.</p>
+
+<p style="text-align:justify;">Un altro dettaglio è come viene utilizzata la
+memoria video; come si intuisce facilmente nel nostro banco di memoria andremo
+a memorizzare sia le tessere quanto le mappe che useremo per creare i nostri
+<em>background</em>, perciò dovremo prestare attenzione a non sovrascrivere le
+mappe con le tessere o viceversa. Dato che ogni mappa occupa 32x32 per 2 byte =
+2 KB allora ad ogni incremento di <code>BG_MAP_RAM</code> e di
+<code>BG_MAP_BASE</code> ci sposteremo avanti di 2 KB, ma è possibile
+utilizzare al massimo fino solo a 32 mappe, quindi dovremo obbligatoriamente
+limitarci ai primi 64KB. Analogamente ad ogni incremento di
+<code>BG_TILE_RAM</code> e di <code>BG_TILE_BASE</code> ci sposteremo di 16 KB
+quindi saltando il primo blocco, come abbiamo fatto nell'esempio, abbiamo
+lasciato liberi i primi 16 KB per essere sicuri di non sovrascrivere la mappa
+che si trova all'inizio della memoria.</p>
+
+<p style="text-align:justify;"><code>REG_BG1HOFS</code> e
+<code>REG_BG1VOFS</code> invece sono i due registri <em>write-only</em> (cioè è
+solamente possibile scrivere in questi registri ma non leggerne il valore) che
+permettono di traslare (<em>scroll</em>) orizzontalmente e verticalmente il
+<em>background</em>, in questo caso il <em>background</em> 1. Funzionano solo
+nei <em>background</em> di tipo <strong>testo</strong> mentre non funzionano né
+con i <strong>rotazionali</strong> né con gli <strong>estesi</strong>, che
+hanno altri registri per svolgere queste e altre ancor più complesse
+operazioni. Forse avrete anche notato che il quadratino che scompare da destra
+riappare a sinistra e viceversa: è l'effetto del <em>wrapping</em> del
+<em>background</em>, e non è disattivabile nella modalità
+<strong>testo</strong>. In verticale invece il quadratino che scompare in basso
+non appare immediatamente dall'alto e viceversa: questo perché il
+<em>background</em> è più alto dello schermo (256 pixel di altezza del
+<em>background</em> contro i 192 pixel di altezza dello schermo) e quindi il
+<em>wrapping</em> non è immediato.</p>
+
+<p style="text-align:justify;">L'ultimo dettaglio è relativo al fatto che si
+possano usare fino a 1024 tessere al massimo nonostante ogni elemento della
+mappa sia in realtà a 16 bit mentre per rappresentare i numeri tra 0 e 1023
+sono sufficienti 10 bit: tutto questo avviene perché i 6 bit più significativi
+di ogni elemento nella mappa sono riservati a funzioni speciali come le
+<em>palette</em> estese, i primi 4 bit, ed i rimanenti due bit sono proprio
+quelli che, se settati, attivano rispettivamente il <em>mirror</em> (10° bit) e
+il <em>flip</em> (11° bit) della tessera. In <em>libnds</em> (in
+<code>background.h</code>) sono definite le due comode costanti:</p>
+
+<p><code>TILE_FLIP_H</code><br>
+<code>TILE_FLIP_V</code></p>
+
+<p style="text-align:justify;">Quindi per visualizzare una tessera
+<em>tess</em> in modo che appaia ribaltata sia orizzontalmente che
+verticalmente dovremo calcolare il valore da inserire nella mappa con la
+formula:</p>
+
+<p style="text-align:justify;"><code>(tess &amp; 0x03FF) | TILE_FLIP_H |
+TILE_FLIP_V</code></p>
+
+<p style="text-align:justify;">Come già abbiamo scritto in precedenza, solo i
+<em>background</em> di tipo <strong>testo</strong> ed <strong>esteso</strong>
+utilizzano questo sistema su 16 bit, con 1024 possibili tessere diverse. I
+<em>background</em> di tipo <strong>rotazionale</strong> invece utilizzano solo
+mappe con elementi a 8 bit e quindi possono avere al massimo 256 tessere
+distinte e sono prive di capacità di <em>mirror</em> o <em>flip</em> o delle
+<em>palette</em> estese.</p>
+
+<h4>I <em>background</em> rotazionali</h4>
+
+<p style="text-align:justify;">Per ultimi trattiamo i <em>background</em>
+<strong>rotazionali</strong>, tutto sommato i meno interessanti poiché una
+sorta di 'versione economica' dei <em>background</em> <strong>estesi</strong>,
+dato che tutto quello che si può fare con un <em>background</em>
+<strong>rotazionale</strong> si può fare ugualmente con un <em>background</em>
+<strong>esteso</strong>. Questi possono risultare utili solo nel caso in cui si
+voglia risparmiare memoria video, essendo le mappe dei <em>background</em>
+<strong>rotazionali</strong> più piccole, al costo però di una minor
+flessibilità. Come già detto con <em>background</em> di questo tipo saremo
+limitati a 256 tessere diverse al massimo, non avremo possibilità di
+ribaltamento orizzontale o verticale della tessera e non potremo neanche
+utilizzare le <em>palette</em> estese. In più i <em>background</em>
+<strong>rotazionali</strong> come gli <strong>estesi</strong> supportano
+solamente tessere a 256 colori, mentre i <em>background</em> di tipo
+<strong>testo</strong> supportano anche tessere a 16 colori.</p>
+
+<p style="text-align:justify;">Come in tutti i modi <em>tiled</em>, anche in
+questo dovremo definire delle mappe nelle quali descriveremo la posizione di
+ogni tessera. Come nel modo <strong>esteso</strong> e a differenza del modo
+<strong>testo</strong> in questo modo le mappe partono da una dimensione
+minore, 16x16 tessere (256 byte di dimensione in memoria video, genera un
+<em>background</em> di 128x128 pixel), e salgono fino a 128x128 tessere (16 KB
+occupati dalla mappa in memoria video, genera un <em>background</em> di
+1024x1024 pixel) ma senza essere rappresentate come mappe di dimensione base
+affiancate, e quindi ne sarà immediato l'utilizzo.</p>
+
+<p>Le costanti definite da <em>libnds</em> per i <em>background</em>
+<strong>rotazionali</strong> sono le seguenti:</p>
+
+<p><code>BG_RS_16x16<br>
+BG_RS_32x32<br>
+BG_RS_64x64<br>
+BG_RS_128x128</code></p>
+
+<p style="text-align:justify;">Esiste poi ancora un bit che è estremamente
+importante: un bit che attiva il <em>wrapping</em> del <em>background</em>.
+Quando il <em>wrapping</em> è disattivato, se il <em>background</em> è più
+piccolo dello schermo vedremo solo una parte dello schermo occupata dal
+<em>background</em>, altrimenti l'intero <em>background</em> sarà ripetuto
+sopra e sotto e a destra e sinistra tante volte quante necessarie a riempire
+l'intero schermo. Può essere utile per ottenere vari effetti grafici di
+interessante impatto. Il <em>wrapping</em> è attivabile o disattivabile
+attraverso le costanti:</p>
+
+<p><code>BG_WRAP_ON<br>
+BG_WRAP_OFF</code></p>
+
+<p style="text-align:justify;">come al solito definite nel file
+<code>background.h</code>. Attenzione però, questi flag sono utilizzabili solo
+con i <em>background</em> <strong>rotazionali</strong> o
+<strong>estesi</strong>, i <em>background</em> di tipo <strong>testo</strong>,
+invece, hanno il <em>wrap</em> attivo di default e non è disattivabile.</p>
+
+<p style="text-align:justify;">Nell'esempio che segue utilizzeremo il <em>SUB
+engine</em> per visualizzare un <em>background</em>
+<strong>rotazionale</strong> al centro del quale disegneremo due quadratini blu
+e due crocette rosse. Trascinando il pennino sullo schermo verso l'alto o verso
+il basso forzeremo il ridimensionamento (<em>scale</em>) del
+<em>background</em>, mentre trascinando il pennino a destra e sinistra
+forzeremo la rotazione (<em>rotation</em>) del <em>background</em> in senso
+orario o antiorario. Infine tenendo premuto uno dei due tasti sulla spalla del
+Nintendo DS (i tasti L e R) attiveremo il <em>wrapping</em> per osservare
+l'effetto che fa.</p>
+<pre>#include &lt;nds.h&gt;
+
+// questa funzione genera un "falso" coseno, usando un'onda triangolare
+// restituisce +1 .. -1 in virgola fissa 24.8
+int fake_cos (int angle) {
+  int ret=0;
+  angle %= 360;
+  if (angle&lt;0)
+    angle += 360;
+  switch (angle) {
+    case 0 ... 180:ret = 256-(512*angle/180);
+                    break;
+    case 181 ... 359:ret = ((angle-180)*512/180) - 256;
+                      break;
+  }
+  return (ret);
+}
+
+// sin(x) = cos(90-x)
+int fake_sin (int angle) {
+  return (fake_cos(90 - angle));
+}
+
+int main(void) {
+
+  // impostiamo la memoria video (banco C)
+  vramSetBankC (VRAM_C_SUB_BG);
+  
+  // impostiamo il modo 1 sul SUB engine e attiviamo il BG 3
+  videoSetModeSub (MODE_1_2D | DISPLAY_BG3_ACTIVE);
+  
+  // creiamo una tessera quasi vuota (64 bytes)
+  u8 TesseraQuasiVuota[64] = 
+  {
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,2,1,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0
+  };
+  
+  // creiamo una tessera con un quadratino
+  u8 TesseraQuadratino[64] =
+  {
+    1,1,1,1,1,1,1,1,
+    1,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1
+  };
+  
+  // creiamo una tessera con una crocetta
+  u8 TesseraCrocetta[64] = 
+  {
+    0,0,0,2,2,0,0,0,
+    0,0,0,2,2,0,0,0,
+    0,0,0,2,2,0,0,0,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    0,0,0,2,2,0,0,0,
+    0,0,0,2,2,0,0,0,
+    0,0,0,2,2,0,0,0
+  };
+ 
+  // copiamo le tessere in memoria video (64 byte ognuna)
+  swiCopy(TesseraQuasiVuota, BG_TILE_RAM_SUB(1), 64);
+  swiCopy(TesseraQuadratino, (u8*)BG_TILE_RAM_SUB(1) + 64, 64);
+  swiCopy(TesseraCrocetta, (u8*)BG_TILE_RAM_SUB(1) + 128, 64);
+  
+  // impostiamo la palette ai colori 0=nero, 1=blu, 2=rosso
+  BG_PALETTE_SUB [0] = RGB5(0,0,0);
+  BG_PALETTE_SUB [1] = RGB5(0,0,31);
+  BG_PALETTE_SUB [2] = RGB5(31,0,0);
+  
+  // riempiamo la mappa usando la tessera quasi vuota (è la tessera #0)
+  // attenzione, ogni halfword definisce DUE tessere
+  int i;
+  for (i=0;i&lt;8*16;i++)
+    ((u16*)BG_MAP_RAM_SUB(0)) [i] = 0x0000;
+    
+  // mettiamo una tessera con il quadratino (la #1) e una con la crocetta (#2)
+  // circa in centro allo schermo (6,7) e (7,7)
+  ((u16*)BG_MAP_RAM_SUB(0)) [(7*16+6)/2] = 0x0102;
+  
+  // mettiamo altre DUE tessere, una con la crocetta (la #2) e una con il
+  // quadratino alla riga sotto le precedenti
+  ((u16*)BG_MAP_RAM_SUB(0)) [(8*16+6)/2] = 0x0201;
+  
+  // impostiamo il BG 1 al modo rotazionale a 16x16 tessere
+  // e indichiamo dove iniziano nella memoria video la mappa e le tessere
+  REG_BG3CNT_SUB = BG_RS_16x16 | BG_MAP_BASE(0) | BG_TILE_BASE(1);
+  
+  // associamo il MAIN engine allo schermo inferiore
+  // il SUB engine quindi sarà associato allo schermo superiore
+  lcdMainOnBottom ();
+  
+  // posiziono il background in centro allo schermo
+  REG_BG3X_SUB = - (256-128)/2 &lt;&lt; 8;
+  REG_BG3Y_SUB = - (192-128)/2 &lt;&lt; 8;
+  
+  int down_X=0, down_Y=0;
+  while(1) {
+  
+    // leggiamo lo stato dei tasti e del touch screen
+    scanKeys();
+    
+    // stiamo premendo uno dei tasti sulla spalla del DS?
+    if (keysHeld() &amp; (KEY_L|KEY_R))
+      
+      // attiva il wrap del background
+      REG_BG3CNT_SUB |= BG_WRAP_ON;
+    else
+     
+      // DISattiva il wrap del background
+      REG_BG3CNT_SUB &amp;= ~BG_WRAP_ON;
+
+    // abbiamo appena toccato il touch screen?
+    if (keysDown() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      // memorizziamola per vedere dove va a finire
+      down_X=touch.px;
+      down_Y=touch.py;
+    }
+  
+    // oppure siamo ancora appoggiati sul touch screen?
+    else if (keysHeld() &amp; KEY_TOUCH) {
+     
+      // leggi la posizione del pennino
+      touchPosition touch; touchRead(&amp;touch);
+      
+      int angle = (touch.px - down_X) * 5;
+      int scale = (down_Y - touch.py) * 5 + (1 &lt;&lt; 8);
+      
+      REG_BG3PA_SUB = (fake_cos (angle) * scale) &gt;&gt; 8;
+      REG_BG3PB_SUB = (-fake_sin (angle) * scale) &gt;&gt; 8;
+      REG_BG3PC_SUB = (fake_sin (angle) * scale) &gt;&gt; 8;
+      REG_BG3PD_SUB = (fake_cos (angle) * scale) &gt;&gt; 8;
+    }
+    
+    // altrimenti riporta tutto alla situazione iniziale
+    else {
+      
+      // 'azzera' la matrice di rotazione/dimensionamento per il background 3
+      REG_BG3PA_SUB = 1 &lt;&lt; 8;
+      REG_BG3PB_SUB = 0;
+      REG_BG3PC_SUB = 0;
+      REG_BG3PD_SUB = 1 &lt;&lt; 8;
+    }
+    
+    // aspettiamo il prossimo refresh
+    swiWaitForVBlank();
+  }
+}
+</pre>
+
+<p style="text-align:justify;">E' necessario infine ancora chiarire come si
+controlla la rotazione e il ridimensionamento dei <em>background</em>
+<strong>rotazionali</strong>. I <em>background</em>
+<strong>rotazionali</strong>, come gli <strong>estesi</strong>, hanno ognuno 4
+registri che sono demandati a matrice di rotazione/dimensionamento. Ognuno di
+questi valori è un numero dotato di segno ed espresso in virgola fissa con
+parte frazionaria su 8 bit. Se non avete confidenza con i numeri in virgola
+fissa allora potete provare ad immaginare che il numero sia un intero dotato di
+segno che esprime quante volte si deve accumulare una fissata frazione per
+trovare il valore risultante. La frazione è 1/2<sup>(bit della parte
+frazionaria)</sup>, quindi nel nostro caso avendo 8 bit nella parte frazionaria
+risulterà 1/2<sup>8</sup> = 1/256. Allora scrivendo dentro ogni registro
+dovremo esprimere i valori in 256esimi di intero, ed è per questo che per
+impostare il valore 1 dovremo scrivere proprio 256 (esattamente quel <code>1
+&lt;&lt; 8</code> che si vede nel codice).</p>
+
+<p style="text-align:justify;">Secondo quanto riportato nelle specifiche
+tecniche, per ottenere i valori da inserire nei quattro registri per ottenere
+un <em>background</em> ruotato di <em>x</em> gradi e ridimensionato in scala
+<em>m</em> occorre impostare i valori:<br>
+PA = <em>m</em> cos (<em>x</em>) ; PB = - <em>m</em> sen (<em>x</em>) ; PC =
+<em>m</em> sen (<em>x</em>) ; PD = <em>m</em> cos (<em>x</em>) . PA e PD sono
+impostati allo stesso valore (e PB e PC esattamente opposti) solo perché stiamo
+utilizzando la stessa scala sia per il ridimensionamento verticale che quello
+orizzontale, altrimenti se volessimo distinguere le due scale, <em>mx</em> e
+<em>my</em>, per esempio per avere delle distorsioni, avremo:<br>
+PA = <em>mx</em> cos (<em>x</em>) ; PB = - <em>mx</em> sen (<em>x</em>) ; PC =
+<em>my</em> sen (<em>x</em>) ; PD = <em>my</em> cos (<em>x</em>) .</p>
+
+<p style="text-align:justify;">Se invece preferite evitare la trigonometria,
+potete vedere la matrice nello stesso modo in cui la vede il motore grafico:
+partendo da ogni pixel dello schermo (e non dal <em>background</em>) dovremo
+calcolare quale pixel del <em>background</em> va disegnato. Per fare questo
+calcoleremo il prossimo pixel da disegnare attraverso la suddetta matrice
+interpretando i 4 registri come segue:<br>
+PA = incremento orizzontale (x) sul background per ogni pixel in orizzontale
+(x) sullo schermo<br>
+PB = incremento orizzontale (x) sul background per ogni pixel in verticale (y)
+sullo schermo<br>
+PC = incremento verticale (y) sul background per ogni pixel in orizzontale (x)
+sullo schermo<br>
+PD = incremento verticale (y) sul background per ogni pixel in verticale (y)
+sullo schermo<br>
+e quindi a questo punto se avete capito tutto vi dovrebbe anche risultare
+chiaro perché la matrice di identità (cioè quella che visualizzerà il
+<em>background</em> sullo schermo senza né rotazione né ridimensionamento) sia
+PA=1; PB=0; PC=0; PD=1.</p>
+
+<p style="text-align:justify;">Oltre a questi 4 registri per ogni
+<em>background</em> <strong>rotazionale</strong> (o <strong>esteso</strong>) vi
+sono ancora i 2 registri di scostamento (<em>offset</em>, o volendo
+<em>scroll</em>) che permettono di spostare l'origine del <em>background</em>
+dove desiderato, e hanno dei nomi definiti in <em>libnds</em>. Nel nostro
+esempio, dove usiamo il <em>background</em> 3 del <em>SUB engine</em>, i
+registri sono <code>REG_BG3X_SUB</code> per lo scostamento orizzontale e
+<code>REG_BG3Y_SUB</code> per lo scostamento verticale. Per gli altri
+<em>background</em> avremo nomi simili (cambia la cifra dentro il nome) mentre
+dovremo usare quelli senza la desinenza <code>_SUB</code> quando vogliamo
+riferirci ai <em>background</em> del <em>MAIN engine</em>.</p>
+
+<h4>Priorità dei <em>background</em></h4>
+
+<p style="text-align:justify;">Si è detto che nelle modalità <em>tiled</em> e
+<em>bitmap</em> è possibile attivare fino a tutti e 4 i <em>background</em>
+contemporaneamente, e che attraverso l'uso del colore 0 per i modi
+<em>tiled</em> o attraverso l'uso dell'alfa bit per i modi <em>bitmap</em>, è
+possibile definire quali pixel dovranno essere davvero disegnati, e quindi
+andranno a coprire ciò che è disegnato dietro, e quali pixel invece non saranno
+invece mostrati sul <em>background</em>, permettendo quindi di vedere ciò che è
+visualizzato su un <em>background</em> inferiore. Di norma i
+<em>background</em> si presentano sovrapposti nell'ordine standard, ovvero il
+<em>background</em> 0 sovrasta il <em>background</em> 1 che sta davanti al 2, e
+il <em>background</em> 3 è quindi il fondale più distante possibile. Questa
+impostazione, fortunatamente, non è fissa, altrimenti non ci sarebbe modo di
+avere un <em>background</em> di tipo <em>bitmap</em> (ad esempio il
+<em>background</em> 2 nel modo 5) davanti a tutti gli altri, a meno di non
+tenere spenti i due <em>background</em> superiori. Invece, attraverso l'uso
+della priorità, si può ridefinire (anche dinamicamente, volendo) l'ordine dei
+<em>background</em> assegnando ad ognuno un valore tra 0 e 3: più è piccolo
+questo valore più il <em>background</em> acquista priorità e quindi viene
+mostrato avanti. A parità di priorità ovviamente rimane valido il principio
+precedente, ovvero il <em>background</em> con numero minore verrà disegnato
+davanti mentre tutti gli altri dietro, in ordine. E' definita quindi in
+<em>libnds</em> (in <code>background.h</code>) la seguente macro:</p>
+
+<p><code>BG_PRIORITY(n)</code></p>
+
+<p style="text-align:justify;">che può essere usata appunto a questo scopo. Ad
+esempio per dare al <em>background</em> 2 la massima priorità ed essere certi
+che i <em>background</em> 0 e 1 vengano disegnati sicuramente dietro al 2, si
+potrebbe usare il seguente codice:</p>
+<pre>REG_BG2CNT |= BG_PRIORITY(0);
+REG_BG0CNT |= BG_PRIORITY(1);
+REG_BG1CNT |= BG_PRIORITY(1);</pre>
+
+<p></p>
+
+<p></p>
+<hr>
+
+<p>Sverx, 22 Maggio 2009. Ultima modifica 8 Marzo 2013.</p>
+<hr>
+
+<p>Domande? Dubbi? Suggerimenti? Vuoi scambiare due parole con me? Ho preparato
+un <a href="http://libxm7.s2.bizhat.com/index.php?c=3&amp;mforum=libxm7">forum
+apposta</a>!</p>
+
+<p>Torna all'<a href="index.html">indice</a> per accedere alle altre
+sezioni.</p>
+
+<p></p>
+
+<p><sup>riferimenti:</sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsvideo">http://nocash.emubase.de/gbatek.htm#dsvideo</a></sup></p>
+
+<p><sup><a
+href="http://dev-scene.com/NDS/Tutorials_Day_2#2D">http://dev-scene.com/NDS/Tutorials_Day_2#2D</a></sup></p>
+
+<p><sup><a
+href="http://dev-scene.com/NDS/NDS_Tutorials_VramTable">http://dev-scene.com/NDS/NDS_Tutorials_VramTable</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram">http://nocash.emubase.de/gbatek.htm#dsmemorycontrolvram</a></sup></p>
+
+<p><sup><a
+href="http://dev-scene.com/NDS/Tutorials_Day_3#Frame_buffer...finally">http://dev-scene.com/NDS/Tutorials_Day_3#Frame_buffer...finally</a></sup></p>
+
+<p><sup><a
+href="http://dev-scene.com/NDS/Tutorials_Day_3#Bitmap_Graphics_Modes">http://dev-scene.com/NDS/Tutorials_Day_3#Bitmap_Graphics_Modes</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#dsvideobgmodescontrol">http://nocash.emubase.de/gbatek.htm#dsvideobgmodescontrol</a></sup></p>
+
+<p><sup><a
+href="http://www.dev-scene.com/NDS/Tutorials_Day_4#Map_Entries">http://www.dev-scene.com/NDS/Tutorials_Day_4#Map_Entries</a></sup></p>
+
+<p><sup><a
+href="http://www.dev-scene.com/NDS/Tutorials_Day_4#Background_Memory_Layout_and_VRAM_Management">http://www.dev-scene.com/NDS/Tutorials_Day_4#Background_Memory_Layout_and_VRAM_Management</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdvrambgscreendataformatbgmap">http://nocash.emubase.de/gbatek.htm#lcdvrambgscreendataformatbgmap</a></sup></p>
+
+<p><sup><a
+href="http://nocash.emubase.de/gbatek.htm#lcdiobgcontrol">http://nocash.emubase.de/gbatek.htm#lcdiobgcontrol</a></sup></p>
+
+<p><sup><a
+href="http://www.coranac.com/tonc/text/affine.htm">http://www.coranac.com/tonc/text/affine.htm</a></sup></p>
+</body>
+</html>

@@ -20,6 +20,7 @@ There are 2 ways to run the game, either on an enumator (like no$gba or DeSmuME)
 - `doc/` : assets used in README
 - `include/` : header files
 - `source/` : source files
+- `NDS tutorial (sverx)/` : A tutorial on libnds made by sverx, more information [here](https://github.com/Chi-Iroh/NDS-Tutorial)
 - `copy_to_sd.sh` : copies the `.nds` file to a SD mounted on `/mnt/NDS-SD`
 - `make_with_log.sh` : same as `make`, except that each command is displayed
 - `Makefile` : `make` to build, `make clean` to remove build files, `make re` to rebuild, `.nds` file is generated at the repository root
