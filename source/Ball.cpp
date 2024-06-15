@@ -30,7 +30,7 @@ void Ball::rotate(Direction obstacleDirection) {
 }
 
 void Ball::draw() const {
-    ((u16*)BG_MAP_RAM(0))[this->y * 32 + this->x] = palette::Color::YELLOW;
+    ((u16*)BG_MAP_RAM(0))[this->y * WIDTH_N_TILES + this->x] = palette::Color::YELLOW;
 }
 
 void Ball::forward() {
