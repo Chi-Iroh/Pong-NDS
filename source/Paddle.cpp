@@ -42,7 +42,7 @@ void Paddle::draw() const {
 
 std::optional<Direction> Paddle::intersects(const std::pair<unsigned, unsigned>& coords) const {
     if (coords.first == this->x && (coords.second == sub(this->y[0], 1, MAX_Y) || coords.second == add(this->y[2], 1, MAX_Y))) {
-        return Direction::Hozirontal;
+        return Direction::Horizontal;
     }
     for (unsigned i{ 0 }; i < 3; i++) {
         if (coords.second == this->y[i] && (coords.first == sub(this->x, 1, MAX_X) || coords.first == add(this->x, 1, MAX_X))) {

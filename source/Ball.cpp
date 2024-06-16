@@ -20,7 +20,7 @@ std::optional<Direction> Ball::touchedEdge() const {
     if (this->x == 0 || this->x == MAX_X) {
         return Direction::Vertical;
     } else if (this->y == 0 || this->y == MAX_Y) {
-        return Direction::Hozirontal;
+        return Direction::Horizontal;
     }
     return std::nullopt;
 }

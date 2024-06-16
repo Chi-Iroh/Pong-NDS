@@ -3,7 +3,7 @@
 
 enum class Direction {
     Vertical,
-    Hozirontal
+    Horizontal
 };
 
 std::pair<int, int> rotate(const std::pair<int, int>& move, Direction obstacleDirection);
