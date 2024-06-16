@@ -1,0 +1,3 @@
+SWI : software interrupt --> hblank, vblank etc
+DMA : direct memory access --> to copy memory
+OAM : object attribute memory --> to manage sprites
