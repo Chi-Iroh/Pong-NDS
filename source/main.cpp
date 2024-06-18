@@ -50,9 +50,9 @@ static void moveBall() {
     }
 
     const auto coords{ ball->pos() };
-    if (const std::optional playerIntersect{ player->intersects(coords) }; playerIntersect.has_value()) {
+    if (const std::optional<Direction> playerIntersect{ player->intersects(coords) }; playerIntersect.has_value()) {
         ball->rotate(playerIntersect.value());
-    } else if (const std::optional enemyIntersect{ enemy->intersects(coords) }; enemyIntersect.has_value()) {
+    } else if (const std::optional<Direction> enemyIntersect{ enemy->intersects(coords) }; enemyIntersect.has_value()) {
         ball->rotate(enemyIntersect.value());
     }
     ball->forward();
