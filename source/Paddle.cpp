@@ -6,6 +6,7 @@
 #include "ScreenSize.hpp"
 
 Paddle::Paddle(Type type) :
+    type{ type },
     paletteIndex{ type == Type::ENEMY ? palette::RED : palette::BLUE }
 {
     for (u16*& gfx : this->gfx) {
@@ -75,14 +76,47 @@ void Paddle::draw() const {
     }
 }
 
-std::optional<Direction> Paddle::intersects(const std::pair<int, int>& coords) const {
-    if (coords.first == this->x && (coords.second == modulus(this->y[0] - 1, MAX_Y) || coords.second == modulus(this->y[2] + 1, MAX_Y))) {
-        return Direction::Horizontal;
-    }
-    for (unsigned i{ 0 }; i < 3; i++) {
-        if (coords.second == this->y[i] && (coords.first == modulus(this->x - 1, MAX_X) || coords.first == modulus(this->x + 1, MAX_X))) {
-            return Direction::Vertical;
+bool Paddle::isInXRange(int x) const {
+    const int diff{ x - this->x };
+    return 0 <= diff && diff <= WIDTH;
+}
+
+bool Paddle::isInYRange(int y) const {
+    for (int paddleY : this->y) {
+        const int diff{ y - paddleY };
+        if (0 <= diff && diff <= SINGLE_HEIGHT) {
+            return true;
         }
     }
+    return false;
+}
+
+bool Paddle::collidesOnTopBottom(const std::pair<int, int>& coords) const {
+    const auto [x, y] = coords;
+    return this->isInXRange(x) && (y == this->y[0] - 1 || y == this->y[2] + 1);
+}
+
+bool Paddle::collidesOnRightLeft(const std::pair<int, int>& coords) const {
+    const auto [x, y] = coords;
+    return this->isInYRange(y) && (x == this->x - WIDTH || x == this->x + WIDTH);
+    // this->x - WIDTH because if this->x == ballX, they are on top of each other
+}
+
+std::optional<Direction> Paddle::intersects(const std::pair<int, int>& coords) const {
+    if (this->collidesOnTopBottom(coords)) {
+        return Direction::Horizontal;
+    } else if (this->collidesOnRightLeft(coords)) {
+        return Direction::Vertical;
+    }
     return std::nullopt;
+}
+
+bool Paddle::isInGoalZone(const Ball& ball) const {
+    const int ballX{ ball.pos().first };
+
+    if (this->type == Type::PLAYER) {
+        return ballX <= UNIT_SIZE;
+    } else {
+        return ballX >= MAX_X;
+    }
 }

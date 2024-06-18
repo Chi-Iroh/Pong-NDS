@@ -35,6 +35,4 @@ public:
     void forward();
 
     void reset();
-
-    std::optional<Player> inPlayerZone() const;
 };

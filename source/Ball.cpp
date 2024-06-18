@@ -81,12 +81,3 @@ void Ball::reset() {
     this->x = MAX_X / 2;
     this->y = MAX_Y / 2;
 }
-
-std::optional<Player> Ball::inPlayerZone() const {
-    if (this->x < UNIT_SIZE) {
-        return Player::Player;
-    } else if (this->x > MAX_X - UNIT_SIZE) {
-        return Player::Enemy;
-    }
-    return std::nullopt;
-}

@@ -16,6 +16,7 @@ public:
     };
 
 private:
+    Type type;
     int x;
     std::array<int, 3> y;
     const std::array<Sprite, 3> sprites{};
@@ -25,6 +26,18 @@ private:
     static constexpr int WIDTH{ UNIT_SIZE };
     static constexpr int SINGLE_HEIGHT{ WIDTH };
     static constexpr int HEIGHT{ 3 * SINGLE_HEIGHT };
+
+    /**
+     * @returns true if left side x <= x <= right side x
+    */
+    bool isInXRange(int x) const;
+    /**
+     * @returns true if top y <= y <= bottom y
+    */
+   bool isInYRange(int y) const;
+
+    bool collidesOnTopBottom(const std::pair<int, int>& coords) const;
+    bool collidesOnRightLeft(const std::pair<int, int>& coords) const;
 
 public:
     Paddle(Type type);
@@ -38,4 +51,6 @@ public:
     inline std::pair<int, int> pos() const {
         return { this->x, this->y[1] };
     }
+
+    bool isInGoalZone(const Ball& ball) const;
 };

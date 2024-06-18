@@ -34,13 +34,17 @@ static void moveBall() {
     static unsigned playerScore{ 0 };
     static unsigned enemyScore{ 0 };
 
-    if (const std::optional<Player> playerZone{ ball->inPlayerZone() }; playerZone.has_value()) {
+    bool isThereGoal{ true };
+    if (player->isInGoalZone(*ball)) {
+        enemyScore++; // ball is in player territory --> enemy scored 1 point
+    } else if (enemy->isInGoalZone(*ball)) {
+        playerScore++;
+    } else {
+        isThereGoal = false;
+    }
+
+    if (isThereGoal) {
         ball->reset();
-        if (playerZone.value() == Player::Player) {
-            enemyScore++; // ball is in player territory --> enemy scored 1 point
-        } else {
-            playerScore++;
-        }
         iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
     }
 
