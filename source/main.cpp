@@ -6,6 +6,7 @@
 #include "Paddle.hpp"
 #include "Palette.hpp"
 #include "ScreenSize.hpp"
+#include "background.h"
 
 Ball* ball{ nullptr };
 Paddle* player{ nullptr };
@@ -59,8 +60,15 @@ static void moveBall() {
 
 int main() {
     std::srand(std::time(nullptr));
-    videoSetMode(MODE_0_2D);
-    vramSetBankA(VRAM_A_MAIN_SPRITE);
+
+    // Background has 256 colors, so it is an extended palette
+    // Mode 5 supports extended backgrounds on layers 2 and 3, so bgInit must be called with 2 or 3 for the layer
+    videoSetMode(MODE_5_2D);
+
+    // full addresses are specified so we can easily see it there is an overwrite
+    // see on the VRAM selector : https://mtheall.com/banks.html#A=MBG0&B=MOBJ0
+    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
+    vramSetBankB(VRAM_B_MAIN_SPRITE_0x06400000);
 
     lcdMainOnTop();
     consoleDemoInit();
@@ -74,6 +82,10 @@ int main() {
     ::ball = &ball;
     ::player = &player;
     ::enemy = &enemy;
+
+    const int bg{ bgInit(2, BgType_Bmp8, BgSize_B8_256x256, 0, 0) };
+    dmaCopy(backgroundBitmap, bgGetGfxPtr(bg), backgroundBitmapLen);
+    dmaCopy(backgroundPal, BG_PALETTE, backgroundPalLen);
 
     iprintf("Player 0 | Enemy 0\n");
     timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(10), movePlayer);
