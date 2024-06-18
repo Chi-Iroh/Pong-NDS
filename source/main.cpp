@@ -11,20 +11,7 @@ Ball* ball{ nullptr };
 Paddle* player{ nullptr };
 Paddle* enemy{ nullptr };
 
-static void updateCoords() {
-    static unsigned playerScore{ 0 };
-    static unsigned enemyScore{ 0 };
-
-    if (const std::optional<Player> playerZone{ ball->inPlayerZone() }; playerZone.has_value()) {
-        ball->reset();
-        if (playerZone.value() == Player::Player) {
-            enemyScore++; // ball is in player territory --> enemy scored 1 point
-        } else {
-            playerScore++;
-        }
-        iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
-    }
-
+static void movePlayer() {
     scanKeys();
     const u32 keys{ keysHeld() | keysDown() };
 
@@ -40,6 +27,21 @@ static void updateCoords() {
         enemy->move(0, -UNIT_SIZE);
     } else if (enemyY < ballY) {
         enemy->move(0, UNIT_SIZE);
+    }
+}
+
+static void moveBall() {
+    static unsigned playerScore{ 0 };
+    static unsigned enemyScore{ 0 };
+
+    if (const std::optional<Player> playerZone{ ball->inPlayerZone() }; playerZone.has_value()) {
+        ball->reset();
+        if (playerZone.value() == Player::Player) {
+            enemyScore++; // ball is in player territory --> enemy scored 1 point
+        } else {
+            playerScore++;
+        }
+        iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
     }
 
     const auto coords{ ball->pos() };
@@ -70,7 +72,8 @@ int main() {
     ::enemy = &enemy;
 
     iprintf("Player 0 | Enemy 0\n");
-    timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(10), updateCoords);
+    timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(10), movePlayer);
+    timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
 
     while (true) {
         swiWaitForVBlank();

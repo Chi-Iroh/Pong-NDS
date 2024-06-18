@@ -76,8 +76,8 @@ void Ball::forward() {
 }
 
 void Ball::reset() {
-    this->horizontalMove = std::rand() % 2 ? SIZE : -SIZE;
-    this->verticalMove = std::rand() % 2 ? SIZE : -SIZE;
+    this->horizontalMove = std::rand() % 2 ? 1 : -1;
+    this->verticalMove = std::rand() % 2 ? 1 : -1;
     this->x = MAX_X / 2;
     this->y = MAX_Y / 2;
 }
