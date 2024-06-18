@@ -33,7 +33,7 @@ public:
     void setPosition(int x, int y);
     void move(int x, int y);
     void draw() const;
-    std::optional<Direction> intersects(const std::pair<unsigned, unsigned>& coords) const;
+    std::optional<Direction> intersects(const std::pair<int, int>& coords) const;
 
     inline std::pair<int, int> pos() const {
         return { this->x, this->y[1] };

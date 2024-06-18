@@ -75,7 +75,7 @@ void Paddle::draw() const {
     }
 }
 
-std::optional<Direction> Paddle::intersects(const std::pair<unsigned, unsigned>& coords) const {
+std::optional<Direction> Paddle::intersects(const std::pair<int, int>& coords) const {
     if (coords.first == this->x && (coords.second == modulus(this->y[0] - 1, MAX_Y) || coords.second == modulus(this->y[2] + 1, MAX_Y))) {
         return Direction::Horizontal;
     }
