@@ -16,7 +16,7 @@ Paddle::Paddle(Type type) :
         // A 8x8 sprite contains 64 pixels.
         // The GFX is a u16 pointer, each element can hold 16 bits of data.
         // Each color is held in 4 bits, thus each u16 element of the GFX holds 4 pixels.
-        // As each element of the GFX holds 4 pixels, we need 8x8/4 elements / iterations.
+        // As each element of the GFX holds 4 pixels, we need 8x8/4 elements, thus iterations.
         for (unsigned i{ 0 }; i < 8 * 8 / 4; i++) {
             gfx[i] = this->paletteIndex;
             gfx[i] = (gfx[i] << 4) | this->paletteIndex;
@@ -25,9 +25,9 @@ Paddle::Paddle(Type type) :
         }
     }
     if (type == Type::ENEMY) {
-        this->setPosition(MAX_X - 1, MAX_Y / 2);
+        this->setPosition(MAX_X - WIDTH, MAX_Y / 2);
     } else {
-        this->setPosition(1, MAX_Y / 2);
+        this->setPosition(WIDTH, MAX_Y / 2);
     }
 }
 
@@ -37,22 +37,19 @@ Paddle::~Paddle() {
     }
 }
 
-void Paddle::setPosition(unsigned x, unsigned y) {
+void Paddle::setPosition(int x, int y) {
     this->x = std::min(x, MAX_X);
-    this->y[0] = sub(y, 1, MAX_Y);
-    this->y[1] = std::min(y, MAX_Y);
-    this->y[2] = add(y, 1, MAX_Y);
+    y = std::min(y, MAX_Y - Paddle::WIDTH);
+
+    this->y[0] = modulus(y - Paddle::SINGLE_HEIGHT, MAX_Y);
+    this->y[1] = y;
+    this->y[2] = modulus(y + Paddle::SINGLE_HEIGHT, MAX_Y);
 }
 
 void Paddle::move(int x, int y) {
-    const unsigned absY{ static_cast<unsigned>(std::abs(y)) };
-    this->x = add(this->x, x, MAX_X);
+    this->x = modulus(this->x + x, MAX_X);
     for (unsigned i{ 0 }; i < 3; i++) {
-        if (y > 0) {
-            this->y[i] = add(this->y[i], absY, MAX_Y);
-        } else {
-            this->y[i] = sub(this->y[i], absY, MAX_Y);
-        }
+        this->y[i] = modulus(this->y[i] + y, MAX_Y);
     }
 }
 
@@ -79,11 +76,11 @@ void Paddle::draw() const {
 }
 
 std::optional<Direction> Paddle::intersects(const std::pair<unsigned, unsigned>& coords) const {
-    if (coords.first == this->x && (coords.second == sub(this->y[0], 1, MAX_Y) || coords.second == add(this->y[2], 1, MAX_Y))) {
+    if (coords.first == this->x && (coords.second == modulus(this->y[0] - 1, MAX_Y) || coords.second == modulus(this->y[2] + 1, MAX_Y))) {
         return Direction::Horizontal;
     }
     for (unsigned i{ 0 }; i < 3; i++) {
-        if (coords.second == this->y[i] && (coords.first == sub(this->x, 1, MAX_X) || coords.first == add(this->x, 1, MAX_X))) {
+        if (coords.second == this->y[i] && (coords.first == modulus(this->x - 1, MAX_X) || coords.first == modulus(this->x + 1, MAX_X))) {
             return Direction::Vertical;
         }
     }

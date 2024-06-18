@@ -29,17 +29,17 @@ static void updateCoords() {
     const u32 keys{ keysHeld() | keysDown() };
 
     if ((keys & KEY_DOWN)) {
-        player->move(0, 1);
+        player->move(0, UNIT_SIZE);
     } else if ((keys & KEY_UP)) {
-        player->move(0, -1);
+        player->move(0, -UNIT_SIZE);
     }
 
-    const unsigned ballY{ ball->pos().second };
-    const unsigned enemyY{ enemy->pos().second };
+    const int ballY{ ball->pos().second };
+    const int enemyY{ enemy->pos().second };
     if (enemyY > ballY) {
-        enemy->move(0, -1);
+        enemy->move(0, -UNIT_SIZE);
     } else if (enemyY < ballY) {
-        enemy->move(0, 1);
+        enemy->move(0, UNIT_SIZE);
     }
 
     const auto coords{ ball->pos() };

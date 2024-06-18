@@ -1,5 +1,9 @@
 #pragma once
+/**
+ * @brief Applies a modulus on n.
+ * @note adds mod to n while negative
+ * @returns n modulus mod, thus a value in [0;mod]
+*/
+int modulus(int n, int mod);
 
-unsigned add(unsigned n1, unsigned n2, unsigned max);
-unsigned sub(unsigned n1, unsigned n2, unsigned max);
-unsigned diff(unsigned n1, unsigned n2);
+int diff(int n1, int n2);

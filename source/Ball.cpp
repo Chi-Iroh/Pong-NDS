@@ -16,7 +16,7 @@ Ball::Ball() :
     // A 8x8 sprite contains 64 pixels.
     // The GFX is a u16 pointer, each element can hold 16 bits of data.
     // Each color is held in 4 bits, thus each u16 element of the GFX holds 4 pixels.
-    // As each element of the GFX holds 4 pixels, we need 8x8/4 elements / iterations.
+    // As each element of the GFX holds 4 pixels, we need 8x8/4 elements, thus iterations.
     for (unsigned i{ 0 }; i < 8 * 8 / 4; i++) {
         this->gfx[i] = palette::YELLOW;
         this->gfx[i] = (this->gfx[i] << 4) | palette::YELLOW;
@@ -29,14 +29,14 @@ Ball::~Ball() {
     oamFreeGfx(&oamMain, this->gfx);
 }
 
-std::pair<unsigned, unsigned> Ball::pos() const {
+std::pair<int, int> Ball::pos() const {
     return { this->x, this-> y };
 }
 
 std::optional<Direction> Ball::touchedEdge() const {
-    if (this->x == 0 || this->x == MAX_X) {
+    if (this->x <= SIZE || this->x >= WIDTH - SIZE) {
         return Direction::Vertical;
-    } else if (this->y == 0 || this->y == MAX_Y) {
+    } else if (this->y <= SIZE || this->y >= HEIGHT - SIZE) {
         return Direction::Horizontal;
     }
     return std::nullopt;
@@ -71,29 +71,21 @@ void Ball::forward() {
     if (edge.has_value()) {
         this->rotate(edge.value());
     }
-    if (this->horizontalMove == 1) {
-        this->x = add(this->x, 1, MAX_X);
-    } else {
-        this->x = sub(this->x, 1, MAX_X);
-    }
-    if (this->verticalMove == 1) {
-        this->y = add(this->y, 1, MAX_Y);
-    } else {
-        this->y = sub(this->y, 1, MAX_Y);
-    }
+    this->x = std::clamp<int>(this->x + this->horizontalMove, 0, MAX_X);
+    this->y = std::clamp<int>(this->y + this->verticalMove, 0, MAX_Y);
 }
 
 void Ball::reset() {
-    this->horizontalMove = std::rand() % 2 ? 1 : -1;
-    this->verticalMove = std::rand() % 2 ? 1 : -1;
+    this->horizontalMove = std::rand() % 2 ? SIZE : -SIZE;
+    this->verticalMove = std::rand() % 2 ? SIZE : -SIZE;
     this->x = MAX_X / 2;
     this->y = MAX_Y / 2;
 }
 
 std::optional<Player> Ball::inPlayerZone() const {
-    if (this->x == 0) {
+    if (this->x < UNIT_SIZE) {
         return Player::Player;
-    } else if (this->x == MAX_X) {
+    } else if (this->x > MAX_X - UNIT_SIZE) {
         return Player::Enemy;
     }
     return std::nullopt;
