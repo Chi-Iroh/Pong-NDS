@@ -21,7 +21,9 @@ static void movePlayer() {
     } else if ((keys & KEY_UP)) {
         player->move(0, -UNIT_SIZE);
     }
+}
 
+static void moveEnemy() {
     const int ballY{ ball->pos().second };
     const int enemyY{ enemy->pos().second };
     if (enemyY > ballY) {
@@ -88,8 +90,9 @@ int main() {
     dmaCopy(backgroundPal, BG_PALETTE, backgroundPalLen);
 
     iprintf("Player 0 | Enemy 0\n");
-    timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(10), movePlayer);
-    timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
+    timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(15), movePlayer);
+    timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(10), moveEnemy);
+    timerStart(2, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
 
     while (true) {
         swiWaitForVBlank();
