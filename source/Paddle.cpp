@@ -77,8 +77,7 @@ void Paddle::draw() const {
 }
 
 bool Paddle::isInXRange(int x) const {
-    const int diff{ x - this->x };
-    return 0 <= diff && diff <= WIDTH;
+    return this->x <= x && x <= this->x + WIDTH;
 }
 
 bool Paddle::isInYRange(int y) const {
@@ -115,8 +114,8 @@ bool Paddle::isInGoalZone(const Ball& ball) const {
     const int ballX{ ball.pos().first };
 
     if (this->type == Type::PLAYER) {
-        return ballX <= UNIT_SIZE;
+        return ballX == 0;
     } else {
-        return ballX >= MAX_X;
+        return ballX == MAX_X;
     }
 }

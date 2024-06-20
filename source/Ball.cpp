@@ -34,9 +34,9 @@ std::pair<int, int> Ball::pos() const {
 }
 
 std::optional<Direction> Ball::touchedEdge() const {
-    if (this->x <= SIZE || this->x >= WIDTH - SIZE) {
+    if (this->x == 0 || this->x >= WIDTH - SIZE) {
         return Direction::Vertical;
-    } else if (this->y <= SIZE || this->y >= HEIGHT - SIZE) {
+    } else if (this->y == 0 || this->y >= HEIGHT - SIZE) {
         return Direction::Horizontal;
     }
     return std::nullopt;
