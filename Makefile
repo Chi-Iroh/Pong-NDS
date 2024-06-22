@@ -8,6 +8,12 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
+ifeq ($(SILENTCMD),)
+	HIDE_ERROR_OUTPUT	:=
+else
+	HIDE_ERROR_OUTPUT	:=	2> /dev/null
+endif
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -104,12 +110,12 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
  
 #---------------------------------------------------------------------------------
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	$(SILENTCMD) [ -d $@ ] || mkdir -p $@
+	$(SILENTCMD) $(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
  
 #---------------------------------------------------------------------------------
 clean:
-	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds $(TARGET).ds.gba 
+	$(SILENTCMD) rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds $(TARGET).ds.gba 
  
  
 #---------------------------------------------------------------------------------
@@ -126,21 +132,23 @@ $(OUTPUT).elf	:	$(BUILD_FILES)
 #---------------------------------------------------------------------------------
 %.bin.o	:	%.bin
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD) $(bin2o)
 
 #---------------------------------------------------------------------------------
 %.s %.h	: %.png %.grit
 #---------------------------------------------------------------------------------
-	grit $< -fts -o$*
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD) grit $< -fts -o$*
 
 #---------------------------------------------------------------------------------------
 %.h : %.mp3
 #---------------------------------------------------------------------------------------
-	ffmpeg -i $< -y -f s16le -acodec pcm_s16le -ar 8192 $(basename $@).raw
-	xxd -i $(basename $@).raw $@
-	rm $(basename $@).raw
-	sed -i "1i#pragma once" $@
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD) ffmpeg -i $< -y -f s16le -acodec pcm_s16le -ar 8192 $(basename $@).raw $(HIDE_ERROR_OUTPUT)
+	$(SILENTCMD) xxd -i $(basename $@).raw $@
+	$(SILENTCMD) rm $(basename $@).raw
+	$(SILENTCMD) sed -i "1i#pragma once" $@
  
 -include $(DEPENDS)
  
