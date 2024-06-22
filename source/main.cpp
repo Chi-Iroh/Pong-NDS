@@ -167,6 +167,13 @@ int main() {
     timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(10), moveEnemy);
     timerStart(2, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
 
+    /**
+     * Sounds are stored as MP3 and then converted to raw 16 bit PCM to be played on the NDS (thus SoundFormat_16bit).
+     * 127 is the (max) volume, must be in [0;127]
+     * 64 is the sound diffusion, 0 = sound full on the left speaker, 64 (used here) is equally loud on both, and 127 is full on the right speaker
+     * true = loop sound, false = don't loop
+     * 0 = loop point (offset to loop again, 0 here to loop from the start)
+    */
     soundPlaySample(bgm_raw, SoundFormat_16Bit, bgm_raw_len, SOUND_FREQUENCY, 127, 64, true, 0);
 
     while (true) {
@@ -178,6 +185,9 @@ int main() {
         // Updates (refresh) the sprites of the main engine (top screen).
         oamUpdate(&oamMain);
         if (soundToPlay) {
+            /**
+             * Same as above soundPlaySample, except false = don't loop and the final 0 (loop point) is unused here
+            */
             soundPlaySample(soundToPlay.load(), SoundFormat_16Bit, beep_raw_len, SOUND_FREQUENCY, 127, 64, false, 0);
             soundToPlay = nullptr;
         }
