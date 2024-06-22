@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+
 #include "Coords.hpp"
 #include "Layer.hpp"
 #include "Paddle.hpp"

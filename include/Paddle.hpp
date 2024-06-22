@@ -1,8 +1,10 @@
 #pragma once
-#include <nds.h>
 #include <array>
 #include <optional>
 #include <utility>
+
+#include <nds.h>
+
 #include "Ball.hpp"
 #include "Rotation.hpp"
 #include "ScreenSize.hpp"

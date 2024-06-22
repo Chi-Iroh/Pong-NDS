@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+
 #include "Ball.hpp"
 #include "Coords.hpp"
 #include "Layer.hpp"

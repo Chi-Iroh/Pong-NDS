@@ -1,4 +1,5 @@
 #include "Sprite.hpp"
+
 #include <nds.h>
 
 int Sprite::globalID{ 0 };

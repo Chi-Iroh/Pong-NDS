@@ -1,4 +1,5 @@
 #pragma once
+
 /**
  * @brief Applies a modulus on n.
  * @note adds mod to n while negative

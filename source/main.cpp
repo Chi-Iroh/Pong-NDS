@@ -1,12 +1,15 @@
-#include <nds.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+
+#include <nds.h>
+
 #include "Ball.hpp"
 #include "Layer.hpp"
 #include "Paddle.hpp"
 #include "ScreenSize.hpp"
 #include "SpritePalette.hpp"
+
 #include "background.h"
 
 /**
