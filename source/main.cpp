@@ -1,3 +1,4 @@
+#include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -8,9 +9,14 @@
 #include "Layer.hpp"
 #include "Paddle.hpp"
 #include "ScreenSize.hpp"
+#include "Sound.hpp"
 #include "SpritePalette.hpp"
 
 #include "background.h"
+#include "beep.h"
+#include "bgm.h"
+#include "lose_point.h"
+#include "win_point.h"
 
 /**
  * timerStart has a void(void) callback, so to pass data to it, we store their address as global variables.
@@ -44,6 +50,8 @@ static void moveEnemy() {
     }
 }
 
+std::atomic<void*> soundToPlay{ nullptr };
+
 static void moveBall() {
     static unsigned playerScore{ 0 };
     static unsigned enemyScore{ 0 };
@@ -51,8 +59,10 @@ static void moveBall() {
     bool isThereGoal{ true };
     if (player->isInGoalZone(*ball)) {
         enemyScore++; // ball is in player territory --> enemy scored 1 point
+        soundToPlay = lose_point_raw;
     } else if (enemy->isInGoalZone(*ball)) {
         playerScore++;
+        soundToPlay = win_point_raw;
     } else {
         isThereGoal = false;
     }
@@ -65,8 +75,10 @@ static void moveBall() {
     const auto coords{ ball->pos() };
     if (const std::optional<Direction> playerIntersect{ player->intersects(coords) }; playerIntersect.has_value()) {
         ball->rotate(playerIntersect.value());
+        soundToPlay = beep_raw;
     } else if (const std::optional<Direction> enemyIntersect{ enemy->intersects(coords) }; enemyIntersect.has_value()) {
         ball->rotate(enemyIntersect.value());
+        soundToPlay = beep_raw;
     }
     ball->forward();
 }
@@ -109,6 +121,8 @@ int main() {
     ::player = &player;
     ::enemy = &enemy;
 
+    soundEnable();
+
     /**
      * A bitmap background consists of many 8x8 pixels tiles, with each pixel represented by a number, an offset in a color list, called color palette.
      * Palette is either 16, or 256 colors (256 = extended palette). 16 colors means each pixel is encoded in 4 bits (2^4 = 16), or 8 bits if 256 colors (256 = 2^8).
@@ -143,6 +157,8 @@ int main() {
     timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(10), moveEnemy);
     timerStart(2, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
 
+    soundPlaySample(bgm_raw, SoundFormat_16Bit, bgm_raw_len, SOUND_FREQUENCY, 127, 64, true, 0);
+
     while (true) {
         // Waits for a screen refresh.
         swiWaitForVBlank();
@@ -151,5 +167,9 @@ int main() {
         ball.draw();
         // Updates (refresh) the sprites of the main engine (top screen).
         oamUpdate(&oamMain);
+        if (soundToPlay) {
+            soundPlaySample(soundToPlay.load(), SoundFormat_16Bit, beep_raw_len, SOUND_FREQUENCY, 127, 64, false, 0);
+            soundToPlay = nullptr;
+        }
     }
 }
