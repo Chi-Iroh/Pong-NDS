@@ -27,30 +27,47 @@ static Ball* ball{ nullptr };
 static Paddle* player{ nullptr };
 static Paddle* enemy{ nullptr };
 
+std::atomic<void*> soundToPlay{ nullptr };
+
+static void checkCollisions() {
+    const auto coords{ ball->pos() };
+    if (const std::optional<Direction> playerIntersect{ player->intersects(coords) }; playerIntersect.has_value()) {
+        ball->rotate(playerIntersect.value());
+        soundToPlay = beep_raw;
+        ball->forward();
+    } else if (const std::optional<Direction> enemyIntersect{ enemy->intersects(coords) }; enemyIntersect.has_value()) {
+        ball->rotate(enemyIntersect.value());
+        soundToPlay = beep_raw;
+        ball->forward();
+    }
+}
+
 static void movePlayer() {
     // Updates keys status, NOT stylus status.
     scanKeys();
     // Get both held keys and only pressed keys.
     const u32 keys{ keysHeld() | keysDown() };
 
-    if ((keys & KEY_DOWN)) {
-        player->move(0, UNIT_SIZE);
-    } else if ((keys & KEY_UP)) {
-        player->move(0, -UNIT_SIZE);
+    if (!(keys & KEY_DOWN) && !(keys & KEY_UP)) {
+        return;
+    }
+
+    for (int i{ 0 }; i < 8; i++) {
+        player->move(0, (keys & KEY_UP) ? -1 : 1);
+        checkCollisions();
     }
 }
 
 static void moveEnemy() {
     const int ballY{ ball->pos().second };
     const int enemyY{ enemy->pos().second };
-    if (enemyY > ballY) {
-        enemy->move(0, -UNIT_SIZE);
-    } else if (enemyY < ballY) {
-        enemy->move(0, UNIT_SIZE);
+    const int direction{ enemyY > ballY ? -1 : 1 };
+
+    for (int i{ 0 }; i < UNIT_SIZE; i++) {
+        enemy->move(0, direction);
+        checkCollisions();
     }
 }
-
-std::atomic<void*> soundToPlay{ nullptr };
 
 static void moveBall() {
     static unsigned playerScore{ 0 };
@@ -72,14 +89,7 @@ static void moveBall() {
         iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
     }
 
-    const auto coords{ ball->pos() };
-    if (const std::optional<Direction> playerIntersect{ player->intersects(coords) }; playerIntersect.has_value()) {
-        ball->rotate(playerIntersect.value());
-        soundToPlay = beep_raw;
-    } else if (const std::optional<Direction> enemyIntersect{ enemy->intersects(coords) }; enemyIntersect.has_value()) {
-        ball->rotate(enemyIntersect.value());
-        soundToPlay = beep_raw;
-    }
+    checkCollisions();
     ball->forward();
 }
 
