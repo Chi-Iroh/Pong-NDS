@@ -140,6 +140,7 @@ $(OUTPUT).elf	:	$(BUILD_FILES)
 	ffmpeg -i $< -y -f s16le -acodec pcm_s16le -ar 8192 $(basename $@).raw
 	xxd -i $(basename $@).raw $@
 	rm $(basename $@).raw
+	sed -i "1i#pragma once" $@
  
 -include $(DEPENDS)
  
