@@ -70,7 +70,7 @@ void Paddle::draw() const {
             Layer::UPPER_LAYER,         // Prioriry / layer, see Layer.hpp
             0,                          // If bitmap (NOT in this case) --> alpha (transparency) value
                                         // Otherwise (this case) --> palette index (there are many color palettes for sprites, 16 for 4 bit colors and 16 more for 8 bit colors) in [0;15]
-                                        // So here, 0 = first 4 bit (16 color) sprite pamette, as plain colors are used for sprites, one palette can hold them all
+                                        // So here, 0 = first 4 bit (16 color) sprite palette, as plain colors are used for sprites, one palette can hold them all
             SpriteSize_8x8,             // 8x8 pixels
             SpriteColorFormat_16Color,  // 16 colors palette, thus NOT bitmap
             this->gfx[i],               // Sprite memory
