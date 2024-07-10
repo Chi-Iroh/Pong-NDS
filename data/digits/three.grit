@@ -1,0 +1,5 @@
+# 4 bit (16 colors) bitmap
+-gB4
+
+# white = transparency
+-gTFFFFFF

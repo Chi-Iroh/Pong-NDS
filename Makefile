@@ -67,7 +67,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
  
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(GRAPHICS) $(GRAPHICS)/digits,$(CURDIR)/$(dir)) \
 					$(foreach dir,$(MUSIC),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
@@ -76,7 +76,7 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
+PNGFILES	:=	$(foreach dir,$(GRAPHICS) $(GRAPHICS)/digits,$(notdir $(wildcard $(dir)/*.png)))
 MP3FILES	:=	$(foreach dir,$(MUSIC),$(notdir $(wildcard $(dir)/*.mp3)))
 
 #---------------------------------------------------------------------------------

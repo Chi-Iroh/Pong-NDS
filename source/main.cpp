@@ -8,11 +8,16 @@
 #include "Ball.hpp"
 #include "Layer.hpp"
 #include "Paddle.hpp"
+#include "ScoreBoard.hpp"
 #include "ScreenSize.hpp"
 #include "Sound.hpp"
 #include "SpritePalette.hpp"
 
+// images
 #include "background.h"
+#include "scoreboard.h"
+
+// musics / sounds
 #include "beep.h"
 #include "bgm.h"
 #include "lose_point.h"
@@ -28,6 +33,9 @@ static Paddle* player{ nullptr };
 static Paddle* enemy{ nullptr };
 
 std::atomic<void*> soundToPlay{ nullptr };
+
+static std::atomic<unsigned> playerScore{ 0 };
+static std::atomic<unsigned> enemyScore{ 0 };
 
 static void checkCollisions() {
     const auto coords{ ball->pos() };
@@ -70,9 +78,6 @@ static void moveEnemy() {
 }
 
 static void moveBall() {
-    static unsigned playerScore{ 0 };
-    static unsigned enemyScore{ 0 };
-
     bool isThereGoal{ true };
     if (player->isInGoalZone(*ball)) {
         enemyScore++; // ball is in player territory --> enemy scored 1 point
@@ -86,53 +91,22 @@ static void moveBall() {
 
     if (isThereGoal) {
         ball->reset();
-        iprintf("Player %u | Enemy %u\n", playerScore, enemyScore);
     }
 
     checkCollisions();
     ball->forward();
 }
 
-int main() {
-    std::srand(std::time(nullptr));
+static void checkWinner() {
+    if (playerScore == 10 || enemyScore == 10) {
+        playerScore = 0;
+        enemyScore = 0;
+        soundToPlay = nullptr;
+        ball->reset();
+    }
+}
 
-    // Mode 5 supports simple (text) backgrounds on layers 0 and 1, extended backgrounds on layers 2 and 3, so bgInit must be called with 2 or 3 for the layer
-    videoSetMode(MODE_5_2D);
-
-    /**
-     * Full addresses are specified so we can easily see it there is an overwrite
-     * See on the VRAM selector : https://mtheall.com/banks.html#A=MBG0&B=MOBJ0
-    **/
-    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
-    vramSetBankB(VRAM_B_MAIN_SPRITE_0x06400000);
-
-    /**
-     * The NDS has 2 engines, the main and the sub engine. These two have different capabilities, heavily described in sverx's tutorial (video.html).
-     * Assigns the main engine to the top screen.
-    **/
-    lcdMainOnTop();
-
-    // Initializes the bottom screen such as we can write text on it, using iprintf() function
-    consoleDemoInit();
-
-    /**
-     * Initializes the OAM, the sprite manager (see sprite.html) and links it to the main engine (top screen then)
-     * SpriteMapping_1D_32 : sprites are represented as 1D (linear) array of tiles, and each tile is 32 bytes
-     * false : no extended palette (not 256 colors, only 16), thus sprites tiles use 4-bit colors
-    **/
-    oamInit(&oamMain, SpriteMapping_1D_32, false);
-    sprite_palette::init();
-
-    Paddle player{ Paddle::Type::PLAYER };
-    Paddle enemy{ Paddle::Type::ENEMY };
-    Ball ball{};
-
-    ::ball = &ball;
-    ::player = &player;
-    ::enemy = &enemy;
-
-    soundEnable();
-
+static void initBackgrounds() {
     /**
      * A bitmap background consists of many 8x8 pixels tiles, with each pixel represented by a number, an offset in a color list, called color palette.
      * Palette is either 16, or 256 colors (256 = extended palette). 16 colors means each pixel is encoded in 4 bits (2^4 = 16), or 8 bits if 256 colors (256 = 2^8).
@@ -156,8 +130,71 @@ int main() {
     // The same thing for the background color palette
     dmaCopy(backgroundPal, BG_PALETTE, backgroundPalLen);
 
-    // Writes text on bottom screen.
-    iprintf("Player 0 | Enemy 0\n");
+    // -----------------------------------------------------------------------
+
+    const int scoreboardBg{ bgInitSub(2, BgType_Bmp8, BgSize_B8_256x256, 0, 0) };
+    bgSetPriority(scoreboardBg, Layer::LOWER_LAYER);
+    dmaCopy(scoreboardBitmap, bgGetGfxPtr(scoreboardBg), scoreboardBitmapLen);
+    dmaCopy(scoreboardPal, BG_PALETTE_SUB, scoreboardPalLen);
+}
+
+int main() {
+    std::srand(std::time(nullptr));
+    std::atexit(freeDigits);
+
+    // Mode 5 supports simple (text) backgrounds on layers 0 and 1, extended backgrounds on layers 2 and 3, so bgInit must be called with 2 or 3 for the layer
+    videoSetMode(MODE_5_2D);
+    videoSetModeSub(MODE_5_2D);
+
+    /**
+     * Bank A = main engine (top screen) background
+     * Bank B = main engine (top screen) sprites
+     * Bank C = sub engine (bottom screen) background
+     * Bank D = sub engine (bottom screen) sprites
+     * Full addresses are specified so we can easily see it there is an overwrite
+     * See on the VRAM selector : https://mtheall.com/banks.html#A=MBG0&B=MOBJ0&C=SBG&D=SOBJ
+    **/
+    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
+    vramSetBankB(VRAM_B_MAIN_SPRITE_0x06400000);
+    vramSetBankC(VRAM_C_SUB_BG_0x06200000);
+    vramSetBankD(VRAM_D_SUB_SPRITE); // no explicit address, only one is allowed (see on the VRAM selector)
+
+    /**
+     * The NDS has 2 engines, the main and the sub engine. These two have different capabilities, heavily described in sverx's tutorial (video.html).
+     * Assigns the main engine to the top screen.
+    **/
+    lcdMainOnTop();
+    initBackgrounds();
+
+    /**
+     * Initializes the OAM, the sprite manager (see sprite.html) and links it to the main engine (top screen then)
+     * SpriteMapping_1D_32 : sprites are represented as 1D (linear) array of tiles, and each tile is 32 bytes
+     * false : no extended palette (not 256 colors, only 16), thus sprites tiles use 4-bit colors
+    **/
+    oamInit(&oamMain, SpriteMapping_1D_32, false);
+
+    /**
+     * When initializing with SpriteMapping_1D_32, AI digits 6,7,8,9 aren't displayed.
+     * That's because 64 tiles (64x64 pixels sprites) * 20 digits = 1280 tiles (81920 pixels) > 1024 tiles (65536 pixels)
+     * Also 32 bytes per tile * 1024 tiles = 32KB, and 64 tiles * 20 digits * 4 bits per pixel > 32KB
+     *
+     * Initializing with SpriteMapping_1D_64 reserves 64KB (1024 tiles, each is 64 bytes), thus it can hold our digits.
+    */
+    oamInit(&oamSub, SpriteMapping_1D_64, false);
+    sprite_palette::init();
+
+    initDigits();
+
+    Paddle player{ Paddle::Type::PLAYER };
+    Paddle enemy{ Paddle::Type::ENEMY };
+    Ball ball{};
+
+    ::ball = &ball;
+    ::player = &player;
+    ::enemy = &enemy;
+
+    soundEnable();
+
     /**
      * There are 4 timers on the NDS.
      * Will call movePlayer 15 times per second.
@@ -166,6 +203,7 @@ int main() {
     timerStart(0, ClockDivider_1024, TIMER_FREQ_1024(15), movePlayer);
     timerStart(1, ClockDivider_1024, TIMER_FREQ_1024(10), moveEnemy);
     timerStart(2, ClockDivider_1024, TIMER_FREQ_1024(60), moveBall);
+    timerStart(3, ClockDivider_1024, TIMER_FREQ_1024(60), checkWinner);
 
     /**
      * Sounds are stored as MP3 and then converted to raw 16 bit PCM to be played on the NDS (thus SoundFormat_16bit).
@@ -184,6 +222,11 @@ int main() {
         ball.draw();
         // Updates (refresh) the sprites of the main engine (top screen).
         oamUpdate(&oamMain);
+
+        displayPlayerScore(playerScore.load());
+        displayEnemyScore(enemyScore.load());
+        oamUpdate(&oamSub);
+
         if (soundToPlay) {
             /**
              * Same as above soundPlaySample, except false = don't loop and the final 0 (loop point) is unused here

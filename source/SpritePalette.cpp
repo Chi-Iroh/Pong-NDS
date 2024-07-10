@@ -1,6 +1,6 @@
-#include "SpritePalette.hpp"
-
 #include <nds.h>
+
+#include "SpritePalette.hpp"
 
 namespace sprite_palette {
     void init() {
