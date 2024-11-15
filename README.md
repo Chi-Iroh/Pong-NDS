@@ -35,3 +35,7 @@ The player controls the blue paddle on the left, using up and down arrows of the
 At the beginning / after each point, the ball spawns on the center and goes on a random direction.  
 If the ball manages to go behind a paddle, its opponent wins a point.  
 Both paddles and the ball are displayed on the top screen, and the points count is displayed on the bottom screen.  
+
+## libnds 2.0
+
+There was recently a major update to libnds which impacted emulators (DesMuME, no$GBA and melonDS), so [here](https://github.com/melonDS-emu/melonDS/pull/2197) is a pending pull request to melonDS by a libnds contributor, you can compile that branch and use that build.  
