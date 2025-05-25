@@ -27,7 +27,7 @@ There are 2 ways to run the game, either on an enumator (like no$gba or DeSmuME)
 
 ## Gameplay
 
-Here's a screenshot on DeSmuME emulator :  
+Here's a screenshot on MelonDS emulator :  
 <img src="doc/in-game screenshot.png" alt="Black background with a yellow ball and two paddles, blue at left and red at right. The bottom screen has a score counter for both players."></img>
 
 This game is like a Pong, with a ball bouncing on edges and on 2 paddles, one controlled by a player and the other automatically moves towards the ball.  
